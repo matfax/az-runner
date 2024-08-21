@@ -29,4 +29,5 @@ jobs:
       with:
         azcliversion: latest
         inlineScript: |
-          az acr build --registry ${{ vars.ACR_NAME }} --image az-runner:latest --file ./Dockerfile .
+          az configure --defaults acr=${{ vars.ACR_NAME }}
+          az acr build -t az-runner .
