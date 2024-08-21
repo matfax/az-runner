@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +25,7 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         auth-type: ${{ vars.AZURE_AUTH_TYPE }}
 
-    - name: create GCR build task
+    - name: create ACR build task
       uses: azure/cli@v2.0.0
       with:
         azcliversion: latest
