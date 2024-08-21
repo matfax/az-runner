@@ -30,4 +30,4 @@ jobs:
         azcliversion: latest
         inlineScript: |
           az configure --defaults acr=${{ vars.ACR_NAME }}
-          az acr build -t az-runner .
+          az acr build -t az-runners/ubuntu .
