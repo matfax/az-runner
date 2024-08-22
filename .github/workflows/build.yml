@@ -1,5 +1,9 @@
 name: build and push
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 on:
   push:
     branches:
@@ -31,3 +35,62 @@ jobs:
         inlineScript: |
           az configure --defaults acr=${{ vars.ACR_NAME }}
           az acr build -t az-runner:ubuntu -t az-runner:latest .
+
+  get-token:
+    runs-on: ubuntu-latest
+    environment: runner-token
+    needs: build
+    outputs:
+      registration-token: ${{ steps.request_token.outputs.registration-token }}
+    steps:
+      - uses: mcbenjemaa/gh-request-token@v1
+        id: request_token
+        with:
+          token: ${{ secrets.TOKEN }}
+
+  create:
+    name: create test runner
+    runs-on: ubuntu-latest
+    environment: azure-test
+    needs: get-token
+    steps:
+    - name: login to Azure
+      uses: azure/login@v2.1.1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: create container
+      uses: azure/cli@v2.0.0
+      with:
+        azcliversion: latest
+        inlineScript: |
+            az container create \
+            --resource-group ${{ vars.RES_GROUP }} \
+            --name az-runner-test \
+            --location ${{ vars.LOCATION }} \
+            --image ${{ vars.ACR_NAME }}.azurecr.io/az-runner \
+            --restart-policy Never \
+            --cpu 1 \
+            --memory 2 \
+            --os-type Linux \
+            --environment-variables \
+                'REPO_URL'='${{ github.server_url }}/${{ github.repository }}' \
+                'RUNNER_NAME'='az-runner-test' \
+                'RUNNER_SCOPE'='repo' \
+                'LABELS'='linux,x64,azure' \
+                'EPHEMERAL'='1' \
+            --secure-environment-variables \
+                'RUNNER_TOKEN'='${{ needs.get-token.outputs.registration-token }}' \
+            --no-wait
+            
+  test:
+    name: test runner
+    runs-on:
+      - self-hosted
+      - azure
+    needs: create
+    steps:
+    - name: checkout code
+      uses: actions/checkout@v4.1.7
