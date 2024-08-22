@@ -1,7 +1,7 @@
 {
     "extends": [
         "config:recommended",
-        "helper:pinGitHubActionDigests"
+        "helpers:pinGitHubActionDigests"
     ],
     "separateMinorPatch": false,
     "patch": {
