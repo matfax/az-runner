@@ -28,12 +28,12 @@ jobs:
         uses: azure/powershell@53dd145408794f7e80f97cfcca04155c85234709 # v2.0.0
         with:
           azPSVersion: "latest"
-          inlineScript: ${{ inputs.script }} \
-            -ResourceGroupName "${{ vars.AZ_RES_GROUP }}" \
-            -Location "${{ vars.AZ_LOCATION }}" \
-            -ACRName "${{ vars.ACR_NAME }}" \
-            -ACRUsername "${{ vars.ACR_USERNAME }}" \
-            -ACRPassword (ConvertTo-SecureString -String "${{ secrets.ACR_PASSWORD }}" -AsPlainText -Force) \
-            -GithubServerUrl "${{ github.server_url }}" \
-            -GithubRepository "${{ github.repository }}" \
+          inlineScript: ${{ inputs.script }} `
+            -ResourceGroupName "${{ vars.AZ_RES_GROUP }}" `
+            -Location "${{ vars.AZ_LOCATION }}" `
+            -ACRName "${{ vars.ACR_NAME }}" `
+            -ACRUsername "${{ vars.ACR_USERNAME }}" `
+            -ACRPassword (ConvertTo-SecureString -String "${{ secrets.ACR_PASSWORD }}" -AsPlainText -Force) `
+            -GithubServerUrl "${{ github.server_url }}" `
+            -GithubRepository "${{ github.repository }}" `
             -GithubToken "${{ secrets.RUNNER_ACCESS_TOKEN }}"
