@@ -70,8 +70,7 @@ $container = New-AzContainerInstanceObject `
     -Image "$ACRName.azurecr.io/az-runner" `
     -RequestCpu 1 `
     -RequestMemoryInGb 2 `
-    -EnvironmentVariable @($repoEnv, $runnerNameEnv, $runnerScopeEnv, $labelsEnv, $ephemeralEnv) `
-    -SecureEnvironmentVariable @($runnerTokenEnv)
+    -EnvironmentVariable @($runnerTokenEnv, $repoEnv, $runnerNameEnv, $runnerScopeEnv, $labelsEnv, $ephemeralEnv)
 
 # Define image registry credentials
 $imageRegistryCredential = New-AzContainerGroupImageRegistryCredentialObject `
