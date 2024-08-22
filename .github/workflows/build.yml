@@ -71,6 +71,9 @@ jobs:
             --name az-runner-test \
             --location ${{ vars.LOCATION }} \
             --image ${{ vars.ACR_NAME }}.azurecr.io/az-runner \
+            --registry-username ${{ vars.ACR_USERNAME }} \
+            --registry-password ${{ secrets.ACR_PASSWORD }} \
+            --registry-login-server ${{ vars.ACR_NAME }}.azurecr.io \
             --restart-policy Never \
             --cpu 1 \
             --memory 2 \
