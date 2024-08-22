@@ -1,0 +1,34 @@
+name: azure cli
+
+on:
+  workflow_call:
+    inputs:
+      script:
+        required: true
+        type: string
+    secrets:
+      client-id:
+        required: false
+      tenant-id:
+        required: false
+      subscription-id:
+        required: false
+
+jobs:
+  run:
+    name: run azure cli script
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4.1.7
+      - name: login to Azure
+        uses: azure/login@v2.1.1
+        with:
+          client-id: ${{ secrets.client-id || secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.tenant-id || secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.subscription-id || secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: run azure cli
+        uses: azure/cli@v2.0.0
+        with:
+          azcliversion: latest
+          inlineScript: ${{ inputs.script }}
