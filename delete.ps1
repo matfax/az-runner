@@ -3,13 +3,9 @@ param (
     [string]$ContainerGroupName,
     [Parameter(Mandatory=$true)]
     [string]$ResourceGroupName,
-    [Hashtable]$ExtraArgs
+    [Parameter(ValueFromRemainingArguments=$true)]
+    [string[]]$ExtraArgs
 )
-
-# Process unexpected arguments
-if ($ExtraArgs -ne $null) {
-    Write-Host "Ignoring extra arguments: $($ExtraArgs.Keys)"
-}
 
 Remove-AzContainerGroup `
     -Name $ContainerGroupName `

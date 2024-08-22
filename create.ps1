@@ -15,13 +15,9 @@ param (
     [string]$GithubRepository,
     [Parameter(Mandatory=$true)]
     [string]$GithubToken,
-    [Hashtable]$ExtraArgs
+    [Parameter(ValueFromRemainingArguments=$true)]
+    [string[]]$ExtraArgs
 )
-
-# Process unexpected arguments
-if ($ExtraArgs -ne $null) {
-    Write-Host "Ignoring extra arguments: $($ExtraArgs.Keys)"
-}
 
 # GitHub API URL
 $apiUrl = "https://api.github.com/repos/$GithubRepository/actions/runners/registration-token"
