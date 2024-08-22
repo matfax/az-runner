@@ -55,6 +55,8 @@ jobs:
         id: request_token
         with:
           token: ${{ secrets.TOKEN }}
+      - name: print token
+        run: echo "::add-mask::${{ steps.request_token.outputs.registration-token }}"
 
   create:
     name: create test runner
