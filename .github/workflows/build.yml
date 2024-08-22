@@ -41,6 +41,7 @@ jobs:
     name: create test runner
     uses: ./.github/workflows/powershell.yml
     needs: get-token
+    secrets: inherit
     with:
       environment: azure-test
       script: ./create.ps1

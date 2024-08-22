@@ -9,13 +9,6 @@ on:
       environment:
         required: true
         type: string
-    secrets:
-      client-id:
-        required: false
-      tenant-id:
-        required: false
-      subscription-id:
-        required: false
 
 jobs:
   run:
