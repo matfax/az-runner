@@ -30,7 +30,7 @@ jobs:
   run:
     name: run azure cli script
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment }}
     steps:
       - name: checkout code
         uses: actions/checkout@v4.1.7
