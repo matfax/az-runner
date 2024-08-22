@@ -35,4 +35,5 @@ jobs:
             -ACRUsername "${{ vars.ACR_USERNAME }}" \
             -ACRPassword (ConvertTo-SecureString -String "${{ secrets.ACR_PASSWORD }}" -AsPlainText -Force) \
             -GithubServerUrl "${{ github.server_url }}" \
-            -GithubRepository "${{ github.repository }}"
+            -GithubRepository "${{ github.repository }}" \
+            -GithubToken "${{ secrets.RUNNER_ACCESS_TOKEN }}"

@@ -1,5 +1,7 @@
 param (
+    [Parameter(Mandatory=$true)]
     [string]$ContainerGroupName,
+    [Parameter(Mandatory=$true)]
     [string]$ResourceGroupName,
     [Hashtable]$ExtraArgs
 )
