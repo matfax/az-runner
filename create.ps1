@@ -12,8 +12,6 @@ param (
     [Parameter(Mandatory=$true)]
     [securestring]$ACRPassword,
     [Parameter(Mandatory=$true)]
-    [string]$GithubServerUrl,
-    [Parameter(Mandatory=$true)]
     [string]$GithubRepository,
     [Parameter(Mandatory=$true)]
     [string]$GithubToken,
@@ -26,7 +24,7 @@ if ($ExtraArgs -ne $null) {
 }
 
 # GitHub API URL
-$apiUrl = "https://api.github.com/repos/$Repository/actions/runners/registration-token"
+$apiUrl = "https://api.github.com/repos/$GithubRepository/actions/runners/registration-token"
 
 # Headers for the API request
 $headers = @{
@@ -57,7 +55,7 @@ catch {
 }
 
 # Define environment variables
-$repoEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "REPO_URL" -Value "$GithubServerUrl/$GithubRepository"
+$repoEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "REPO_URL" -Value "https://github.com/$GithubRepository"
 $runnerNameEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER_NAME" -Value $ContainerGroupName
 $runnerScopeEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER_SCOPE" -Value "repo"
 $labelsEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "LABELS" -Value "linux,x64,azure"
