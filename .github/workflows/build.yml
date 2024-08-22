@@ -39,42 +39,24 @@ jobs:
 
   create:
     name: create test runner
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/powershell.yml
     environment: azure-test
     needs: get-token
-    steps:
-    - name: login to Azure
-      uses: azure/login@v2.1.1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-    - name: create container
-      uses: azure/cli@v2.0.0
-      with:
-        azcliversion: latest
-        inlineScript: |
-            az container create \
-            --resource-group ${{ vars.RES_GROUP }} \
-            --name az-runner-test \
-            --location ${{ vars.LOCATION }} \
-            --image ${{ vars.ACR_NAME }}.azurecr.io/az-runner \
-            --registry-username ${{ vars.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --registry-login-server ${{ vars.ACR_NAME }}.azurecr.io \
-            --restart-policy Never \
-            --cpu 1 \
-            --memory 2 \
-            --os-type Linux \
-            --environment-variables \
-                'REPO_URL'='${{ github.server_url }}/${{ github.repository }}' \
-                'RUNNER_NAME'='az-runner-test' \
-                'RUNNER_SCOPE'='repo' \
-                'LABELS'='linux,x64,azure' \
-                'EPHEMERAL'='1' \
-            --secure-environment-variables \
-                'RUNNER_TOKEN'='${{ needs.get-token.outputs.registration-token }}'
+    secrets:
+      client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    with:
+      script: ./create.ps1 \
+        -ContainerGroupName az-runner-test \
+        -ResourceGroupName github \
+        -Location westeurope \
+        -ACRName ${{ vars.ACR_NAME }} \
+        -ACRUsername ${{ vars.ACR_USERNAME }} \
+        -ACRPassword ${{ secrets.ACR_PASSWORD }} \
+        -GithubServerUrl ${{ github.server_url }} \
+        -GithubRepository ${{ github.repository }} \
+        -RunnerToken ${{ needs.get-token.outputs.registration-token }}
 
   test:
     name: test runner
