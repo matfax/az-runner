@@ -24,6 +24,7 @@ jobs:
         az acr build -t az-runner:ubuntu -t az-runner:latest .
 
   get-token:
+    name: fetch registration token
     runs-on: ubuntu-latest
     environment: runner-token
     needs: build
@@ -44,10 +45,12 @@ jobs:
     secrets: inherit
     with:
       environment: azure-test
-      script: ./create.ps1
+      script: ./create.ps1 \
+        -ContainerGroupName az-runner-test \
+        -RunnerToken "${{ needs.get-token.outputs.registration-token }}"
 
   test:
-    name: test runner
+    name: try test runner
     runs-on:
       - self-hosted
       - azure
@@ -55,3 +58,12 @@ jobs:
     steps:
     - name: checkout code
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+  delete:
+    name: delete test runner
+    uses: ./.github/workflows/powershell.yml
+    needs: test
+    secrets: inherit
+    with:
+      environment: azure-test
+      script: ./delete.ps1 -ContainerGroupName az-runner-test

@@ -29,12 +29,10 @@ jobs:
         with:
           azPSVersion: "latest"
           inlineScript: ${{ inputs.script }} \
-            -ContainerGroupName az-runner-test \
             -ResourceGroupName "${{ vars.AZ_RES_GROUP }}" \
             -Location "${{ vars.AZ_LOCATION }}" \
             -ACRName "${{ vars.ACR_NAME }}" \
             -ACRUsername "${{ vars.ACR_USERNAME }}" \
             -ACRPassword (ConvertTo-SecureString -String "${{ secrets.ACR_PASSWORD }}" -AsPlainText -Force) \
             -GithubServerUrl "${{ github.server_url }}" \
-            -GithubRepository "${{ github.repository }}" \
-            -RunnerToken "${{ needs.get-token.outputs.registration-token }}"
+            -GithubRepository "${{ github.repository }}"

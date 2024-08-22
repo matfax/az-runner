@@ -12,9 +12,7 @@ param (
 )
 
 # Process unexpected arguments
-foreach ($key in $ExtraArgs.Keys) {
-    Write-Host "Ignoring extra argument: $key with value $($ExtraArgs[$key])"
-}
+Write-Host "Ignoring extra arguments: $ExtraArgs.Keys"
 
 # Define environment variables
 $repoEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "REPO_URL" -Value "$GithubServerUrl/$GithubRepository"
