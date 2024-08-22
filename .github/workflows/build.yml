@@ -47,7 +47,7 @@ jobs:
       environment: azure-test
       script: ./create.ps1 \
         -ContainerGroupName az-runner-test \
-        -RunnerToken "${{ needs.get-token.outputs.registration-token }}"
+        -RunnerToken (ConvertTo-SecureString -String "${{ needs.get-token.outputs.registration-token }}" -AsPlainText -Force)
 
   test:
     name: try test runner
