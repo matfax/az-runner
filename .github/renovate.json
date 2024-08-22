@@ -22,5 +22,6 @@
         "dependencies",
         "chore"
     ],
+    "ignorePaths": ["caching/"],
     "commitBody": "Signed-off-by: {{{gitAuthor}}}"
 }
