@@ -6,6 +6,9 @@ on:
       script:
         required: true
         type: string
+      environment:
+        required: true
+        type: string
     secrets:
       client-id:
         required: false
@@ -18,17 +21,27 @@ jobs:
   run:
     name: run azure cli script
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
       - name: checkout code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: login to Azure
         uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
         with:
-          client-id: ${{ secrets.client-id }}
-          tenant-id: ${{ secrets.tenant-id }}
-          subscription-id: ${{ secrets.subscription-id }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: run azure cli
         uses: azure/powershell@53dd145408794f7e80f97cfcca04155c85234709 # v2.0.0
         with:
           azPSVersion: "latest"
-          inlineScript: ${{ inputs.script }}
+          inlineScript: ${{ inputs.script }} \
+            -ContainerGroupName az-runner-test \
+            -ResourceGroupName "${{ vars.AZ_RES_GROUP }}" \
+            -Location "${{ vars.AZ_LOCATION }}" \
+            -ACRName "${{ vars.ACR_NAME }}" \
+            -ACRUsername "${{ vars.ACR_USERNAME }}" \
+            -ACRPassword (ConvertTo-SecureString -String "${{ secrets.ACR_PASSWORD }}" -AsPlainText -Force) \
+            -GithubServerUrl "${{ github.server_url }}" \
+            -GithubRepository "${{ github.repository }}" \
+            -RunnerToken "${{ needs.get-token.outputs.registration-token }}"

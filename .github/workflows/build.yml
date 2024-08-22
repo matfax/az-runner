@@ -40,23 +40,10 @@ jobs:
   create:
     name: create test runner
     uses: ./.github/workflows/powershell.yml
-    environment: azure-test
     needs: get-token
-    secrets:
-      client-id: ${{ secrets.AZURE_CLIENT_ID }}
-      tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-      subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     with:
-      script: ./create.ps1 \
-        -ContainerGroupName az-runner-test \
-        -ResourceGroupName github \
-        -Location westeurope \
-        -ACRName ${{ vars.ACR_NAME }} \
-        -ACRUsername ${{ vars.ACR_USERNAME }} \
-        -ACRPassword ${{ secrets.ACR_PASSWORD }} \
-        -GithubServerUrl ${{ github.server_url }} \
-        -GithubRepository ${{ github.repository }} \
-        -RunnerToken ${{ needs.get-token.outputs.registration-token }}
+      environment: azure-test
+      script: ./create.ps1
 
   test:
     name: test runner
