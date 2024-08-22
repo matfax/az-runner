@@ -29,7 +29,7 @@ jobs:
     environment: runner-token
     needs: build
     outputs:
-      registration-token: ${{ steps.request_token.outputs.registration-token }}
+      encrypted-token: ${{ steps.encrypt.outputs.encrypted-token }}
     steps:
       - uses: mcbenjemaa/gh-request-token@946f12468656cbc8b2530c693e0acf429473378c # v1.0.0
         id: request_token
@@ -37,6 +37,14 @@ jobs:
           token: ${{ secrets.TOKEN }}
       - name: print token
         run: echo "::add-mask::${{ steps.request_token.outputs.registration-token }}"
+      - name: encrypt token
+        id: encrypt
+        shell: pwsh
+        run: |
+          $securePassword = ConvertTo-SecureString "${{ steps.request_token.outputs.registration-token }}" -AsPlainText -Force
+          $secureKey = ConvertTo-SecureString "${{ secrets.SEC_PW }}" -AsPlainText -Force
+          $encryptedPassword = ConvertFrom-SecureString $securePassword -SecureKey $secureKey
+          echo "encrypted-token=$encryptedPassword" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
 
   create:
     name: create test runner
@@ -47,7 +55,7 @@ jobs:
       environment: azure-test
       script: ./create.ps1 \
         -ContainerGroupName az-runner-test \
-        -RunnerToken (ConvertTo-SecureString -String "${{ needs.get-token.outputs.registration-token }}" -AsPlainText -Force)
+        -RunnerToken (ConvertTo-SecureString -String "${{ needs.get-token.outputs.encrypted-token }}" -SecureKey (ConvertTo-SecureString "${{ secrets.SEC_PW }}" -AsPlainText -Force))
 
   test:
     name: try test runner
