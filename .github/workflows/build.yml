@@ -43,7 +43,7 @@ jobs:
     outputs:
       registration-token: ${{ steps.request_token.outputs.registration-token }}
     steps:
-      - uses: mcbenjemaa/gh-request-token@v1
+      - uses: mcbenjemaa/gh-request-token@946f12468656cbc8b2530c693e0acf429473378c # renovate: tag=v1.0.0
         id: request_token
         with:
           token: ${{ secrets.TOKEN }}
@@ -84,7 +84,7 @@ jobs:
             --secure-environment-variables \
                 'RUNNER_TOKEN'='${{ needs.get-token.outputs.registration-token }}' \
             --no-wait
-            
+
   test:
     name: test runner
     runs-on:
