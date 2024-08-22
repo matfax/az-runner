@@ -12,7 +12,7 @@ on:
 
 jobs:
   run:
-    name: run azure cli script
+    name: run azure powershell script
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:

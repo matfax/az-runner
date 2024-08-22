@@ -30,8 +30,7 @@ jobs:
     secrets: inherit
     with:
       environment: azure-test
-      script: ./create.ps1 \
-        -ContainerGroupName az-runner-test
+      script: ./create.ps1 -ContainerGroupName az-runner-test
 
   test:
     name: try test runner
