@@ -7,7 +7,11 @@ param (
     [string[]]$ExtraArgs
 )
 
-Remove-AzContainerGroup `
-    -Name $ContainerGroupName `
-    -ResourceGroupName $ResourceGroupName `
-    -Confirm
+$containerGroup = Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupName $ResourceGroupName
+
+if ($containerGroup) {
+    $containerGroup | Remove-AzContainerGroup -Confirm
+} else {
+    Write-Error "Container group not found."
+    exit 1
+}
