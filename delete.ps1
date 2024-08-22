@@ -7,7 +7,9 @@ param (
 )
 
 # Process unexpected arguments
-Write-Host "Ignoring extra arguments: $ExtraArgs.Keys"
+if ($ExtraArgs -ne $null) {
+    Write-Host "Ignoring extra arguments: $($ExtraArgs.Keys)"
+}
 
 Remove-AzContainerGroup `
     -Name $ContainerGroupName `

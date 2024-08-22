@@ -21,7 +21,9 @@ param (
 )
 
 # Process unexpected arguments
-Write-Host "Ignoring extra arguments: $ExtraArgs.Keys"
+if ($ExtraArgs -ne $null) {
+    Write-Host "Ignoring extra arguments: $($ExtraArgs.Keys)"
+}
 
 # GitHub API URL
 $apiUrl = "https://api.github.com/repos/$Repository/actions/runners/registration-token"
@@ -29,7 +31,7 @@ $apiUrl = "https://api.github.com/repos/$Repository/actions/runners/registration
 # Headers for the API request
 $headers = @{
     "Accept" = "application/vnd.github+json"
-    "Authorization" = "Bearer $Token"
+    "Authorization" = "Bearer $GithubToken"
     "X-GitHub-Api-Version" = "2022-11-28"
 }
 
