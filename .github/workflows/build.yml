@@ -15,12 +15,11 @@ permissions:
 
 jobs:
   build:
-    environment: azure
     uses: ./.github/workflows/cli.yml
     secrets: inherit
     with:
+      environment: azure
       script: |
-        az configure --defaults acr=${{ vars.ACR_NAME }}
         az acr build --no-push --no-wait -t cache ./caching
         az acr build -t az-runner:ubuntu -t az-runner:latest .
 

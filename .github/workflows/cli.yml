@@ -6,6 +6,18 @@ on:
       script:
         required: true
         type: string
+      environment:
+        required: true
+        type: string
+      acr-name:
+        required: false
+        type: string
+      location:
+        required: false
+        type: string
+      resource-group:
+        required: false
+        type: string
     secrets:
       client-id:
         required: false
@@ -18,6 +30,7 @@ jobs:
   run:
     name: run azure cli script
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
     steps:
       - name: checkout code
         uses: actions/checkout@v4.1.7
@@ -27,6 +40,8 @@ jobs:
           client-id: ${{ secrets.client-id || secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.tenant-id || secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.subscription-id || secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: set defaults
+        run: az configure --defaults acr=${{ inputs.acr-name || vars.ACR_NAME }} location=${{ inputs.location || vars.AZ_LOCATION }} subscription=${{ secrets.subscription-id || secrets.AZURE_SUBSCRIPTION_ID }} group=${{ inputs.resource-group || vars.AZ_RES_GROUP }}
       - name: run azure cli
         uses: azure/cli@v2.0.0
         with:
