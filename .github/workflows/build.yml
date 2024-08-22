@@ -34,7 +34,7 @@ jobs:
         azcliversion: latest
         inlineScript: |
           az configure --defaults acr=${{ vars.ACR_NAME }}
-          az acr build --no-push --no-wait -t cache -f ./caching
+          az acr build --no-push --no-wait -t cache ./caching
 
     - name: create ACR build task
       uses: azure/cli@v2.0.0
