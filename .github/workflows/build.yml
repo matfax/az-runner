@@ -16,7 +16,7 @@ permissions:
 jobs:
   build:
     environment: azure
-    uses: ./cli.yml
+    uses: ./.github/workflows/cli.yml
     secrets: inherit
     with:
       script: |
