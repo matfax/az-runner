@@ -1,39 +1,37 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy Powershell project to Azure Function App - az-runner
+name: deploy functions
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      slot:
+        required: true
+        type: string
   workflow_dispatch:
-
-env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
+    inputs:
+      slot:
+        required: true
+        type: string
 
 jobs:
   deploy:
     runs-on: windows-latest
     permissions:
-      id-token: write #This is required for requesting the JWT
-
+      id-token: write
     steps:
-      - name: 'Checkout GitHub Action'
-        uses: actions/checkout@v4
+      - name: checkout code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_426EBB997E104B7BBA2371F9A44EA1FD }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_CA698282E4EE4B108BA0A7094D216875 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_46D185A5C30E4F0C800067BE25E24C6E }}
 
-      - name: 'Run Azure Functions Action'
-        uses: Azure/functions-action@v1
+      - name: deploy Azure Functions
+        uses: Azure/functions-action@v1.5.2
         id: fa
         with:
-          app-name: 'az-runner'
-          slot-name: 'Production'
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          
+          app-name: ${{ vars.AZ_FUNCTION_APP_NAME }}
+          slot-name: ${{ inputs.slot }}
+          package: '.'
