@@ -13,9 +13,11 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+            fetch-depth: 0
         
-      - uses: codota/tabnine-pr-agent@v1
-        continue-on-error: true
+      - name: run review agent
+        uses: codota/tabnine-pr-agent@v1
         with:
             PAT: ${{ secrets.TABNINE_PAT }}
             ref: origin/${{ github.head_ref }}
