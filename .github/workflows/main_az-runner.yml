@@ -1,15 +1,26 @@
 name: deploy functions
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+        - '*.ps1'
+        - '*.json'
+        - '.github/workflows/deploy.yml'
+        - '.github/workflows/main_az-runner.yml'
+        - '*Func'
+    paths-ignore:
+        - '.github/*.*'
   workflow_call:
     inputs:
       slot:
-        required: true
+        required: false
         type: string
   workflow_dispatch:
     inputs:
       slot:
-        required: true
+        required: false
         type: string
 
 jobs:
@@ -17,6 +28,9 @@ jobs:
     runs-on: windows-latest
     permissions:
       id-token: write
+    concurrency:
+      group: functions
+      cancel-in-progress: false
     steps:
       - name: checkout code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -33,5 +47,5 @@ jobs:
         id: fa
         with:
           app-name: ${{ vars.AZ_FUNCTION_APP_NAME }}
-          slot-name: ${{ inputs.slot }}
+          slot-name: ${{ inputs.slot || 'production' }}
           package: '.'

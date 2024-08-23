@@ -8,6 +8,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+        - '*.json'
+        - '*.md'
+        - '*Func'
 
 permissions:
   id-token: write
@@ -50,11 +54,3 @@ jobs:
     with:
       environment: azure-test
       script: ./delete.ps1 -ContainerGroupName az-runner-test
-
-  test-deploy:
-    name: test deployment
-    needs: test
-    uses: ./.github/workflows/main_az-runner.yml
-    secrets: inherit
-    with:
-      slot: az-runner-test
