@@ -10,8 +10,6 @@ on:
         - '.github/workflows/deploy.yml'
         - '.github/workflows/main_az-runner.yml'
         - '*Func'
-    paths-ignore:
-        - '.github/*.*'
   workflow_call:
     inputs:
       slot:
