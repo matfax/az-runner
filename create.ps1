@@ -17,7 +17,7 @@ param (
     [string]$GithubRepository,
     [Parameter(Mandatory=$true)]
     [string]$GithubToken,
-    [Parameter](Mandatory=$true)
+    [Parameter(Mandatory=$true)]
     [string]$Labels,
     [Parameter(ValueFromRemainingArguments=$true)]
     [string[]]$ExtraArgs
