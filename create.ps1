@@ -5,16 +5,16 @@ param (
     [string]$ResourceGroupName,
     [Parameter(Mandatory=$true)]
     [string]$Location,
-    [Parameter(Mandatory=$true)]
-    [string]$ACRName,
-    [Parameter(Mandatory=$true)]
-    [string]$ACRUsername,
-    [Parameter(Mandatory=$true)]
-    [securestring]$ACRPassword,
+    [Parameter(Mandatory=$false)]
+    [string]$ACRName = $env:ACR_NAME,
+    [Parameter(Mandatory=$false)]
+    [string]$ACRUsername = $env:ACR_USERNAME,
+    [Parameter(Mandatory=$false)]
+    [securestring]$ACRPassword = (ConvertTo-SecureString -String $env:ACR_PASSWORD -AsPlainText -Force),
     [Parameter(Mandatory=$true)]
     [string]$GithubRepository,
-    [Parameter(Mandatory=$true)]
-    [string]$GithubToken,
+    [Parameter(Mandatory=$false)]
+    [string]$GithubToken = $env:GITHUB_PAT,
     [Parameter(Mandatory=$true)]
     [string]$Labels,
     [Parameter(ValueFromRemainingArguments=$true)]

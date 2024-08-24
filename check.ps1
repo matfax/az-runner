@@ -5,8 +5,8 @@ param (
     [string]$ResourceGroupName,
     [Parameter(Mandatory=$true)]
     [string]$GithubRepository,
-    [Parameter(Mandatory=$true)]
-    [string]$GithubToken,
+    [Parameter(Mandatory=$false)]
+    [string]$GithubToken = $env:GITHUB_PAT,
     [Parameter(ValueFromRemainingArguments=$true)]
     [string[]]$ExtraArgs
 )

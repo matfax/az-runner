@@ -31,13 +31,14 @@ jobs:
           
       - name: run commands
         uses: azure/powershell@53dd145408794f7e80f97cfcca04155c85234709 # v2.0.0
+        env:
+          ACR_NAME: ${{ vars.ACR_NAME }}
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          GITHUB_PAT: ${{ secrets.RUNNER_ACCESS_TOKEN }}
         with:
           azPSVersion: "latest"
           inlineScript: ${{ inputs.script }} `
             -ResourceGroupName "${{ vars.AZ_RES_GROUP }}" `
             -Location "${{ vars.AZ_LOCATION }}" `
-            -ACRName "${{ vars.ACR_NAME }}" `
-            -ACRUsername "${{ vars.ACR_USERNAME }}" `
-            -ACRPassword (ConvertTo-SecureString -String "${{ secrets.ACR_PASSWORD }}" -AsPlainText -Force) `
-            -GithubRepository "${{ github.repository }}" `
-            -GithubToken "${{ secrets.RUNNER_ACCESS_TOKEN }}"
+            -GithubRepository "${{ github.repository }}"
