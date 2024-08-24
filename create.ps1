@@ -24,12 +24,12 @@ param (
 )
 
 # Check if container group already exists
-try {
-    Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupName $ResourceGroupName
+$containerGroup = Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
+
+if ($containerGroup) {
     Write-Output "Container group '$ContainerGroupName' already exists."
     return
-}
-catch {
+} else {
     Write-Output "Container group '$ContainerGroupName' does not exist. Creating..."
 }
 

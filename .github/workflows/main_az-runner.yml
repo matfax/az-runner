@@ -23,6 +23,7 @@ on:
 
 jobs:
   deploy:
+    name: deploy functions
     runs-on: windows-latest
     permissions:
       id-token: write
