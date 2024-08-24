@@ -1,6 +1,8 @@
 param (
     [Parameter(Mandatory=$true)]
     [string]$ContainerGroupName,
+    [Parameter(Mandatory=$false)]
+    [string]$RunnerGroupName = "Default",
     [Parameter(Mandatory=$true)]
     [string]$ResourceGroupName,
     [Parameter(Mandatory=$true)]
@@ -15,9 +17,21 @@ param (
     [string]$GithubRepository,
     [Parameter(Mandatory=$true)]
     [string]$GithubToken,
+    [Parameter](Mandatory=$true)
+    [string]$Labels,
     [Parameter(ValueFromRemainingArguments=$true)]
     [string[]]$ExtraArgs
 )
+
+# Check if container group already exists
+try {
+    Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupName $ResourceGroupName
+    Write-Output "Container group '$ContainerGroupName' already exists."
+    return
+}
+catch {
+    Write-Output "Container group '$ContainerGroupName' does not exist. Creating..."
+}
 
 # GitHub API URL
 $apiUrl = "https://api.github.com/repos/$GithubRepository/actions/runners/registration-token"
@@ -46,15 +60,15 @@ try {
     Write-Output "Registration token obtained and stored as a secure string."
 }
 catch {
-    Write-Error "Failed to obtain registration token."
-    exit 1
+    throw "Failed to obtain registration token."
 }
 
 # Define environment variables
 $repoEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "REPO_URL" -Value "https://github.com/$GithubRepository"
 $runnerNameEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER_NAME" -Value $ContainerGroupName
+$runnerGroupEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER_GROUP" -Value $RunnerGroupName
 $runnerScopeEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER_SCOPE" -Value "repo"
-$labelsEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "LABELS" -Value "linux,x64,azure"
+$labelsEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "LABELS" -Value $Labels
 $ephemeralEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "EPHEMERAL" -Value "1"
 
 # Define secure environment variable
@@ -66,7 +80,7 @@ $container = New-AzContainerInstanceObject `
     -Image "$ACRName.azurecr.io/az-runner" `
     -RequestCpu 1 `
     -RequestMemoryInGb 2 `
-    -EnvironmentVariable @($runnerTokenEnv, $repoEnv, $runnerNameEnv, $runnerScopeEnv, $labelsEnv, $ephemeralEnv)
+    -EnvironmentVariable @($runnerTokenEnv, $repoEnv, $runnerNameEnv, $runnerGroupEnv, $runnerScopeEnv, $labelsEnv, $ephemeralEnv)
 
 # Define image registry credentials
 $imageRegistryCredential = New-AzContainerGroupImageRegistryCredentialObject `
@@ -83,3 +97,5 @@ New-AzContainerGroup `
     -OsType Linux `
     -RestartPolicy Never `
     -ImageRegistryCredential $imageRegistryCredential
+
+Write-Host "Container group '$ContainerGroupName' created successfully." -ForeGroundColor Green

@@ -34,13 +34,17 @@ jobs:
     secrets: inherit
     with:
       environment: azure-test
-      script: ./create.ps1 -ContainerGroupName az-runner-test
+      script: ./create.ps1 `
+        -ContainerGroupName az-runner-test `
+        -Labels "linux,x64,azure,test" `
+        -RunnerGroupName "Testing"
 
   test:
     name: try test runner
     runs-on:
       - self-hosted
       - azure
+      - test
     needs: create
     steps:
     - name: checkout code
