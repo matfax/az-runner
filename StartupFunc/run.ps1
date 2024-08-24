@@ -6,6 +6,40 @@ param($Request, $TriggerMetadata)
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
 
+# Ensure that the webhook type is 'workflow_job'
+if ($Request.Body.event -ne "workflow_job") {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::BadRequest
+        Body = "Invalid webhook event type. Expected 'workflow_job'."
+    })
+    return
+}
+
+# Assign the workflow_job object to a new variable
+$workflowJob = $Request.Body.workflow_job
+
+# Now you can use $workflowJob to access the workflow job data
+
+# Check if the workflow job is waiting
+if ($Request.Body.action -ne "waiting") {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::OK
+        Body = "Ignoring non-waiting workflow job trigger."
+    })
+    return
+}
+
+# Check that the workflow job uses the correct labels
+$ labels = $workflowJob.labels
+
+if ($labels -notcontains "azure" || $labels -notcontains "production") {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::OK
+        Body = "Ignoring job without the 'azure' and 'production' runner labels."
+    })
+    return
+}
+
 # Check if the request contains repository data
 $repo = $Request.Body.repository
 if (-not $repo) {
