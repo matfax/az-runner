@@ -55,7 +55,7 @@ jobs:
   test:
     name: invoke webhook
     needs: deploy
-    if: !inputs.no-test
+    if: inputs.no-test != 'true'
     runs-on:
       - self-hosted
       - azure
@@ -68,7 +68,7 @@ jobs:
     name: check final state
     runs-on: ubuntu-latest
     needs: test
-    if: !inputs.no-test
+    if: inputs.no-test != 'true'
     steps:
       - name: fail if test runner failed to complete
         if: needs.test.result != 'success'
