@@ -46,9 +46,22 @@ jobs:
       - azure
       - test
     needs: create
+    cancel-timeout-minutes: 1
     steps:
     - name: checkout code
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+  check:
+    name: check final state
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: fail if test runner failed to complete
+        if: needs.test.result != 'success'
+        run: |
+          echo "Test runner was probably cancelled or failed otherwise."
+          exit 1
 
   delete:
     name: delete test runner
