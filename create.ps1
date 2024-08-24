@@ -1,8 +1,6 @@
 param (
     [Parameter(Mandatory=$true)]
     [string]$ContainerGroupName,
-    [Parameter(Mandatory=$false)]
-    [string]$RunnerGroupName = "Default",
     [Parameter(Mandatory=$true)]
     [string]$ResourceGroupName,
     [Parameter(Mandatory=$true)]
@@ -66,7 +64,6 @@ catch {
 # Define environment variables
 $repoEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "REPO_URL" -Value "https://github.com/$GithubRepository"
 $runnerNameEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER_NAME" -Value $ContainerGroupName
-$runnerGroupEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER_GROUP" -Value $RunnerGroupName
 $runnerScopeEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER_SCOPE" -Value "repo"
 $labelsEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "LABELS" -Value $Labels
 $ephemeralEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "EPHEMERAL" -Value "1"

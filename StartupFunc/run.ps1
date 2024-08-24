@@ -88,8 +88,7 @@ try {
         -ACRPassword $acrPassword `
         -GithubRepository "$orgOrUser/$repoName" `
         -GithubToken $githubToken `
-        -Labels "linux,x64,azure,production" `
-        -RunnerGroupName "Azure"
+        -Labels "linux,x64,azure,production"
 
     $responseBody = "Successfully created container group: $containerGroupName"
     $statusCode = [HttpStatusCode]::OK
