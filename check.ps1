@@ -4,6 +4,8 @@ param (
     [Parameter(Mandatory=$true)]
     [string]$ResourceGroupName,
     [Parameter(Mandatory=$true)]
+    [string]$GithubRepository,
+    [Parameter(Mandatory=$true)]
     [string]$GithubToken,
     [Parameter(ValueFromRemainingArguments=$true)]
     [string[]]$ExtraArgs
