@@ -28,18 +28,14 @@ $headers = @{
 }
 
 # Fetching runner information from GitHub
-try {
-    $response = Invoke-RestMethod -Uri $apiUrl -Method Post -Headers $headers
-    
-    # If no runners found with expected name, exit the script
-    if ($response.Body.total_count -eq 0) {
-        throw "No runners found in the repository."
-    } elseif ($null -eq ($response.Body.runners | Where-Object { $_.name -eq $ContainerGroupName })) {
-        throw "Runner '$ContainerGroupName' not found in the repository."
-    }
 
-    Write-Host "Runner '$ContainerGroupName' found." -ForegroundColor Green
+$response = Invoke-RestMethod -Uri $apiUrl -Method Get -Headers $headers
+
+# If no runners found with expected name, exit the script
+if ($response.Body.total_count -eq 0) {
+    throw "No runners found in the repository."
+} elseif ($null -eq ($response.Body.runners | Where-Object { $_.name -eq $ContainerGroupName })) {
+    throw "Runner '$ContainerGroupName' not found in the repository."
 }
-catch {
-    throw "Failed to find the expected runner: $_"
-}
+
+Write-Host "Runner '$ContainerGroupName' found." -ForegroundColor Green
