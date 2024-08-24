@@ -1,18 +1,18 @@
 param (
     [Parameter(Mandatory=$true)]
     [string]$ContainerGroupName,
-    [Parameter(Mandatory=$true)]
-    [string]$ResourceGroupName,
-    [Parameter(Mandatory=$true)]
-    [string]$Location,
+    [Parameter(Mandatory=$false)]
+    [string]$ResourceGroupName = $env:AZ_RES_GROUP,
+    [Parameter(Mandatory=$false)]
+    [string]$Location = $env:AZ_LOCATION,
     [Parameter(Mandatory=$false)]
     [string]$ACRName = $env:ACR_NAME,
     [Parameter(Mandatory=$false)]
     [string]$ACRUsername = $env:ACR_USERNAME,
     [Parameter(Mandatory=$false)]
     [securestring]$ACRPassword = (ConvertTo-SecureString -String $env:ACR_PASSWORD -AsPlainText -Force),
-    [Parameter(Mandatory=$true)]
-    [string]$GithubRepository,
+    [Parameter(Mandatory=$false)]
+    [string]$GithubRepository = $env:GITHUB_REPOSITORY,
     [Parameter(Mandatory=$false)]
     [string]$GithubToken = $env:GITHUB_PAT,
     [Parameter(Mandatory=$true)]

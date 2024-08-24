@@ -66,15 +66,12 @@ $repoName = $repo.name
 $containerGroupName = "az-runner-$orgOrUser-$repoName"
 
 # Get environment variables and secrets
-$resourceGroupName = $env:AZ_RES_GROUP
-$location = $env:AZ_LOCATION
-$acrName = $env:ACR_NAME
 $acrUsername = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-acr-username -AsPlainText
 $acrPassword = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-acr-token
 $githubToken = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-github-registration-access -AsPlainText
 
 # Ensure all required variables are present
-if (-not ($resourceGroupName -and $location -and $acrName -and $acrUsername -and $acrPassword -and $githubToken)) {
+if (-not ($acrUsername -and $acrPassword -and $githubToken)) {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
         Body = "One or more required environment variables or secrets are missing."
@@ -89,9 +86,6 @@ $createScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "../create.ps1"
 try {
     & $createScriptPath `
         -ContainerGroupName $containerGroupName `
-        -ResourceGroupName $resourceGroupName `
-        -Location $location `
-        -ACRName $acrName `
         -ACRUsername $acrUsername `
         -ACRPassword $acrPassword `
         -GithubRepository "$orgOrUser/$repoName" `

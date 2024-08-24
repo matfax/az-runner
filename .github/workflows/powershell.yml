@@ -36,9 +36,8 @@ jobs:
           ACR_USERNAME: ${{ vars.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
           GITHUB_PAT: ${{ secrets.RUNNER_ACCESS_TOKEN }}
+          AZ_LOCATION: ${{ vars.AZ_LOCATION }}
+          AZ_RES_GROUP: ${{ vars.AZ_RES_GROUP }}
         with:
           azPSVersion: "latest"
-          inlineScript: ${{ inputs.script }} `
-            -ResourceGroupName "${{ vars.AZ_RES_GROUP }}" `
-            -Location "${{ vars.AZ_LOCATION }}" `
-            -GithubRepository "${{ github.repository }}"
+          inlineScript: ${{ inputs.script }}
