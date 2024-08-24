@@ -2,7 +2,7 @@
   "bindings": [
     {
       "webHookType": "github",
-      "authLevel": "anonymous",
+      "authLevel": "function",
       "type": "httpTrigger",
       "direction": "in",
       "name": "Request",
