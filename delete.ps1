@@ -1,8 +1,8 @@
 param (
     [Parameter(Mandatory=$true)]
     [string]$ContainerGroupName,
-    [Parameter(Mandatory=$true)]
-    [string]$ResourceGroupName,
+    [Parameter(Mandatory=$false)]
+    [string]$ResourceGroupName = $env:AZ_RES_GROUP,
     [Parameter(ValueFromRemainingArguments=$true)]
     [string[]]$ExtraArgs
 )

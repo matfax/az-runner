@@ -1,10 +1,10 @@
 param (
     [Parameter(Mandatory=$true)]
     [string]$ContainerGroupName,
-    [Parameter(Mandatory=$true)]
-    [string]$ResourceGroupName,
-    [Parameter(Mandatory=$true)]
-    [string]$GithubRepository,
+    [Parameter(Mandatory=$false)]
+    [string]$ResourceGroupName = $env:AZ_RES_GROUP,
+    [Parameter(Mandatory=$false)]
+    [string]$GithubRepository = $env:GITHUB_REPOSITORY,
     [Parameter(Mandatory=$false)]
     [string]$GithubToken = $env:GITHUB_PAT,
     [Parameter(ValueFromRemainingArguments=$true)]
