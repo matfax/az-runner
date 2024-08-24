@@ -12,6 +12,5 @@ $containerGroup = Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupN
 if ($containerGroup) {
     $containerGroup | Remove-AzContainerGroup
 } else {
-    Write-Error "Container group not found."
-    exit 1
+    throw "Container group not found."
 }
