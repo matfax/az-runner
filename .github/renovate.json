@@ -23,15 +23,5 @@
         "chore"
     ],
     "ignorePaths": ["caching/*"],
-    "commitBody": "Signed-off-by: {{{gitAuthor}}}",
-    "customManagers": [
-        {
-            "customType": "regex",
-            "fileMatch": ["^.+\\.yml$"],
-            "includePaths": [".github/workflows/"],
-            "matchStrings": ["modules-to-cache:\\s?<depName>:<currentValue>\\n"],
-            "datasourceTemplate": "nuget",
-            "registryUrlTemplate": "https://www.powershellgallery.com/api/v2/"
-        }
-    ]
+    "commitBody": "Signed-off-by: {{{gitAuthor}}}"
 }
