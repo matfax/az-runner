@@ -1,4 +1,4 @@
-name: build and push
+name: build and push image
 
 concurrency:
   group: ${{ github.workflow }}
@@ -74,7 +74,7 @@ jobs:
     name: delete test runner
     uses: ./.github/workflows/powershell.yml
     needs: test
-    if: always()
+    
     secrets: inherit
     with:
       environment: azure-test
