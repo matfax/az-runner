@@ -11,7 +11,7 @@ on:
     paths-ignore:
         - '*.json'
         - '*.md'
-        - '*Func'
+        - 'startup/*'
 
 permissions:
   id-token: write
