@@ -1,13 +1,21 @@
 using namespace System.Net
-
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata)
 
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
 
+# Ensure that the header contains 'workflow_job' event
+if ($Request.Headers["X-GitHub-Event"] -ne "workflow_job") {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::BadRequest
+        Body = "Invalid header 'X-GitHub-Event'. Expected 'workflow_job'."
+    })
+    return
+}
+
 # Ensure that the webhook type is 'workflow_job'
-if ($Request.Body.event -ne "workflow_job") {
+if ($null -eq $Request.Body.workflow_job) {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
         Body = "Invalid webhook event type. Expected 'workflow_job'."
@@ -20,11 +28,11 @@ $workflowJob = $Request.Body.workflow_job
 
 # Now you can use $workflowJob to access the workflow job data
 
-# Check if the workflow job is waiting
-if ($Request.Body.action -ne "waiting") {
+# Check if the workflow job is queued
+if ($Request.Body.action -ne "queued") {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::OK
-        Body = "Ignoring non-waiting workflow job trigger."
+        Body = "Ignoring non-queued workflow job trigger."
     })
     return
 }
@@ -103,3 +111,4 @@ Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $statusCode
     Body = $responseBody
 })
+
