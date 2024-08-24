@@ -33,7 +33,7 @@ jobs:
         uses: azure/powershell@53dd145408794f7e80f97cfcca04155c85234709 # v2.0.0
         env:
           ACR_NAME: ${{ vars.ACR_NAME }}
-          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_USERNAME: ${{ vars.ACR_USERNAME }}
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
           GITHUB_PAT: ${{ secrets.RUNNER_ACCESS_TOKEN }}
         with:
