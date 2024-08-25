@@ -1,6 +1,7 @@
 {
   "bindings": [
     {
+      "webHookType": "genericJson",
       "authLevel": "function",
       "type": "httpTrigger",
       "direction": "in",

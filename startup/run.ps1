@@ -5,31 +5,43 @@ param($Request, $TriggerMetadata)
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
 
-$hmacsha = New-Object System.Security.Cryptography.HMACSHA256
-$hmacsha.Key = [Text.Encoding]::UTF8.GetBytes($env:GITHUB_WEBHOOK_SECRET)
-$payloadBytes = [Text.Encoding]::UTF8.GetBytes($Request.Body)
-$computedHash = $hmacsha.ComputeHash($payloadBytes)
-$computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower()
-$receivedSignature = $Request.Headers['X-Hub-Signature-256']
-
-if ($computedSignature -ne $receivedSignature) {
+# Ensure that header contains HMAC
+if ($null -eq $Request.Headers["X-Hub-Signature-256"]) {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
-        Body = "Invalid authorization signature, expected $computedSignature."
+        Body = "Missing HMAC signature in header."
     })
     return
 }
 
+# Calculate HMAC signature
 try {
-    $Payload = $Request.Body | ConvertTo-Json -ErrorAction Stop
+    $hmacsha = New-Object System.Security.Cryptography.HMACSHA256
+    $hmacsha.Key = [Text.Encoding]::UTF8.GetBytes($env:GITHUB_WEBHOOK_SECRET)
+    $compressedJson = $Request.Body | ConvertTo-Json -Compress -ErrorAction Stop
+    $payloadBytes = [Text.Encoding]::UTF8.GetBytes($compressedJson)
+    $computedHash = $hmacsha.ComputeHash($payloadBytes)
+    $computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower()
+    $receivedSignature = $Request.Headers['X-Hub-Signature-256']
 }
 catch {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = [HttpStatusCode]::BadRequest
-        Body = "Failed to parse JSON payload: $_"
+        StatusCode = [HttpStatusCode]::InternalServerError
+        Body = "Failed to process JSON for HMAC."
     })
     return
 }
+
+# Verify HMAC signature
+if ($computedSignature -ne $receivedSignature) {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::Unauthorized
+        Body = "Invalid authorization signature."
+    })
+    return
+}
+
+$Payload = $Request.Body
 
 # Ensure that the header contains 'workflow_job' event
 if ($Request.Headers["X-GitHub-Event"] -ne "workflow_job") {
