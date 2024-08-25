@@ -13,6 +13,9 @@ if (!(Test-Path $moduleDir)) {
 # Split PSModulePath into an array of paths
 $modulePaths = $env:PSModulePath -split ';'
 
+# Add common module path to condidates
+$modulePaths += "C:\Program Files\PowerShell\Modules"
+
 # Find the first path where the Module exists
 $foundModulePath = $null
 foreach ($path in $modulePaths) {
