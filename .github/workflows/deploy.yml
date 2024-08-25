@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: install and cache PowerShell modules
-        uses: potatoqualitee/psmodulecache@v6.2
+        uses: potatoqualitee/psmodulecache@8a705c639dc276dfe651189abf11544c5080d384 # v6.2
         with:
           modules-to-cache: 'Az:12.1.0'
 
@@ -54,7 +54,7 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_46D185A5C30E4F0C800067BE25E24C6E }}
 
       - name: deploy Azure Functions
-        uses: Azure/functions-action@v1.5.2
+        uses: Azure/functions-action@fd80521afbba9a2a76a99ba1acc07aff8d733d11 # v1.5.2
         id: fa
         with:
           app-name: ${{ vars.AZ_FUNCTION_APP_NAME }}
