@@ -43,7 +43,7 @@ try {
     $hmacsha.Key = [Text.Encoding]::UTF8.GetBytes($env:GITHUB_WEBHOOK_SECRET)
     $payloadBytes = [Text.Encoding]::UTF8.GetBytes($Request.rawbody)
     $computedHash = $hmacsha.ComputeHash($payloadBytes)
-    $computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower()
+    $computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower().Replace("-", "")
     Write-Verbose "Computed hash: $computedSignature"
 
     $receivedSignature = $Request.Headers['X-Hub-Signature-256']
@@ -51,8 +51,8 @@ try {
 }
 catch {
     Write-Error "[ERROR] Error calculating HMAC signature: $_"
-    Write-Debug "Raw Payload:"
-    Write-Debug $Request.rawbody
+    Write-Verbose "Raw Payload:"
+    Write-Verbose $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
         Body = "Failed to calculate HMAC for payload"
@@ -63,7 +63,7 @@ catch {
 # Verify HMAC signature
 if ($computedSignature -ne $receivedSignature) {
     Write-Error "[ERROR] Invalid HMAC signature for payload with size $($Request.rawbody.Length) bytes:"
-    Write-Debug $Request.rawbody
+    Write-Verbose $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
         Body = "Invalid HMAC signature for payload"
@@ -74,8 +74,8 @@ if ($computedSignature -ne $receivedSignature) {
 # Ensure that the webhook type is 'workflow_job'
 if ($null -eq $Request.Body.workflow_job) {
     Write-Error "[ERROR] Unable to find 'workflow_job' element in payload"
-    Write-Debug "Raw Payload:"
-    Write-Debug $Request.rawbody
+    Write-Verbose "Raw Payload:"
+    Write-Verbose $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
         Body = "Invalid webhook payload"
@@ -100,8 +100,8 @@ $labels = $workflowJob.labels
 
 if ($labels -notcontains "azure" || $labels -notcontains "production") {
     Write-Information "[SKIPPING] Ignoring job without the 'azure' and 'production' runner labels"
-    Write-Debug "Actual Labels:"
-    Write-Debug $labels
+    Write-Verbose "Actual Labels:"
+    Write-Verbose $labels
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Continue
         Body = "Ignoring job without the 'azure' and 'production' runner labels"
