@@ -3,103 +3,119 @@ using namespace System.Net
 param($Request, $TriggerMetadata)
 
 # Write to the Azure Functions log stream.
-Write-Host "PowerShell HTTP trigger function processed a request."
+Write-Verbose "[INFO] Running startup script..."
 
 # Ensure that the header contains 'workflow_job' event
-if ($Request.Headers["X-GitHub-Event"] -ne "workflow_job") {
+$eventType = $Request.Headers["X-GitHub-Event"]
+if ($eventType -ne "workflow_job") {
+    Write-Information "[SKIPPING] Irrelevant event type '$eventType'"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Continue
-        Body = "Irrelevant event type: expected 'workflow_job'."
+        Body = "Irrelevant event type '$eventType', expected 'workflow_job'"
     })
     return
 }
 
 # Ensure that header contains HMAC
 if ($null -eq $Request.Headers["X-Hub-Signature-256"]) {
+    Write-Warning "[WARNING] Missing HMAC signature in header"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
-        Body = "Missing HMAC signature in header."
+        Body = "Missing HMAC signature in header"
     })
     return
 }
 
 # Ensure that env:GITHUB_WEBHOOK_SECRET is defined
 if ($null -eq $env:GITHUB_WEBHOOK_SECRET) {
+    Write-Error "[ERROR] Missing environment variable 'GITHUB_WEBHOOK_SECRET'"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
-        Body = "Missing environment variables on system."
+        Body = "Missing environment variables on system"
     })
     return
 }
 
 # Calculate HMAC signature
 try {
-    $compressedJson = $Request.Body | ConvertTo-Json -Compress -ErrorAction Stop -Depth 20
-
+    Write-Verbose "[INFO] Calculating HMAC of payload..."
     $hmacsha = New-Object System.Security.Cryptography.HMACSHA256
     $hmacsha.Key = [Text.Encoding]::UTF8.GetBytes($env:GITHUB_WEBHOOK_SECRET)
-    $payloadBytes = [Text.Encoding]::UTF8.GetBytes($compressedJson)
+    $payloadBytes = [Text.Encoding]::UTF8.GetBytes($Request.rawbody)
     $computedHash = $hmacsha.ComputeHash($payloadBytes)
     $computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower()
+    Write-Verbose "Computed hash: $computedSignature"
 
     $receivedSignature = $Request.Headers['X-Hub-Signature-256']
+    Write-Verbose "Received hash: $receivedSignature"
 }
 catch {
+    Write-Error "[ERROR] Error calculating HMAC signature: $_"
+    Write-Debug "Raw Payload:"
+    Write-Debug $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
-        Body = "Failed to process JSON for HMAC from payload with size $($Request.Body.Length) bytes: $compressedJson"
+        Body = "Failed to calculate HMAC for payload"
     })
     return
 }
 
 # Verify HMAC signature
 if ($computedSignature -ne $receivedSignature) {
+    Write-Error "[ERROR] Invalid HMAC signature for payload with size $($Request.rawbody.Length) bytes:"
+    Write-Debug $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
-        Body = "Invalid authorization signature for payload with size $($Request.Body.Length) bytes: $compressedJson"
+        Body = "Invalid HMAC signature for payload"
     })
     return
 }
-
-$Payload = $Request.Body
 
 # Ensure that the webhook type is 'workflow_job'
-if ($null -eq $Payload.workflow_job) {
+if ($null -eq $Request.Body.workflow_job) {
+    Write-Error "[ERROR] Unable to find 'workflow_job' element in payload"
+    Write-Debug "Raw Payload:"
+    Write-Debug $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
-        Body = "Invalid webhook event type. Expected 'workflow_job'."
+        Body = "Invalid webhook payload"
     })
     return
 }
 
-$workflowJob = $Payload.workflow_job
+$workflowJob = $Request.Body.workflow_job
 
 # Check if the workflow job is queued
-if ($Payload.action -ne "queued") {
+if ($Request.Body.action -ne "queued") {
+    Write-Information "[SKIPPING] Trigger action of workflow job is not 'queued'"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Continue
-        Body = "Ignoring non-queued workflow job trigger."
+        Body = "Ignoring trigger of non-queued workflow job"
     })
     return
 }
 
 # Check that the workflow job uses the correct labels
-$ labels = $workflowJob.labels
+$labels = $workflowJob.labels
 
 if ($labels -notcontains "azure" || $labels -notcontains "production") {
+    Write-Information "[SKIPPING] Ignoring job without the 'azure' and 'production' runner labels"
+    Write-Debug "Actual Labels:"
+    Write-Debug $labels
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Continue
-        Body = "Ignoring job without the 'azure' and 'production' runner labels."
+        Body = "Ignoring job without the 'azure' and 'production' runner labels"
     })
     return
 }
 
 # Check if the request contains repository data
-$repo = $Payload.repository
+$repo = $Request.Body.repository
 if (-not $repo) {
+    Write-Error "[ERROR] Repository data is missing from the webhook payload"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
-        Body = "Repository data is missing from the webhook payload."
+        Body = "Repository data is missing from the webhook payload"
     })
     return
 }
@@ -116,9 +132,10 @@ $tokenExpiration = [datetime]::Parse($Request.Headers["X-MS-TOKEN-GITHUB-EXPIRES
 $currentTime = [datetime]::UtcNow
 
 if ($tokenExpiration -lt $currentTime) {
+    Write-Error "[ERROR] GitHub App access token has expired"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
-        Body = "GitHub App access token has expired."
+        Body = "GitHub App access token has expired"
     })
     return
 }
@@ -130,9 +147,10 @@ $githubToken = $Request.Headers["X-MS-TOKEN-GITHUB-ACCESS-TOKEN"]
 
 # Ensure all required variables are present
 if (-not ($acrPassword -and $githubToken)) {
+    Write-Error "[ERROR] One or more required environment variables or secrets are inaccessible or missing"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
-        Body = "One or more required environment variables or secrets are missing."
+        Body = "Internal system error"
     })
     return
 }
@@ -142,6 +160,8 @@ $createScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "../create.ps1"
 
 # Call create.ps1 with the required parameters
 try {
+    Write-Verbose "[INFO] Calling create.ps1..."
+
     & $createScriptPath `
         -ContainerGroupName $containerGroupName `
         -ACRPassword $acrPassword `
@@ -153,6 +173,7 @@ try {
     $statusCode = [HttpStatusCode]::OK
 }
 catch {
+    Write-Error "[ERROR] Error creating container group: $_"
     $responseBody = "Failed to create container group: $_"
     $statusCode = [HttpStatusCode]::InternalServerError
 }
@@ -162,3 +183,5 @@ Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $statusCode
     Body = $responseBody
 })
+
+Write-Information "[INFO] Startup successful"
