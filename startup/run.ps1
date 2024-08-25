@@ -34,12 +34,14 @@ if ($null -eq $env:GITHUB_WEBHOOK_SECRET) {
 
 # Calculate HMAC signature
 try {
+    $compressedJson = $Request.Body | ConvertTo-Json -Compress -ErrorAction Stop -Depth 20
+
     $hmacsha = New-Object System.Security.Cryptography.HMACSHA256
     $hmacsha.Key = [Text.Encoding]::UTF8.GetBytes($env:GITHUB_WEBHOOK_SECRET)
-    $compressedJson = $Request.Body | ConvertTo-Json -Compress -ErrorAction Stop
     $payloadBytes = [Text.Encoding]::UTF8.GetBytes($compressedJson)
     $computedHash = $hmacsha.ComputeHash($payloadBytes)
     $computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower()
+
     $receivedSignature = $Request.Headers['X-Hub-Signature-256']
 }
 catch {
