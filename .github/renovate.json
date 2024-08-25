@@ -23,5 +23,14 @@
         "chore"
     ],
     "ignorePaths": ["caching/*"],
-    "commitBody": "Signed-off-by: {{{gitAuthor}}}"
+    "commitBody": "Signed-off-by: {{{gitAuthor}}}",
+    "customManagers": [
+        {
+            "customType": "regex",
+            "fileMatch": ["^.+\\.psd1$"],
+            "matchStrings": ["'<depName>'\\s*=\\s*'<currentValue>'\\s*\\n"],
+            "datasourceTemplate": "nuget",
+            "registryUrlTemplate": "https://www.powershellgallery.com/api/v2/"
+        }
+    ]
 }
