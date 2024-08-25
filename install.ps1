@@ -1,0 +1,34 @@
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$ModuleName
+)
+
+# Check if the Module directory exists, create it if not
+$moduleDir = "./Module"
+if (!(Test-Path $moduleDir)) {
+    New-Item -ItemType Directory -Force -Path $moduleDir | Out-Null
+    Write-Output "Created directory: $moduleDir"
+}
+
+# Split PSModulePath into an array of paths
+$modulePaths = $env:PSModulePath -split ';'
+
+# Find the first path where the Module exists
+$foundModulePath = $null
+foreach ($path in $modulePaths) {
+    $fullPath = Join-Path -Path $path -ChildPath $ModuleName
+    if (Test-Path $fullPath) {
+        $foundModulePath = $fullPath
+        break
+    }
+}
+
+# Throw an exception if the Module was not found
+if ($null -eq $foundModulePath) {
+    throw "Module '$ModuleName' not found in any of the paths in PSModulePath"
+}
+
+# Copy the Module to the current directory's ./Module/ path
+$destPath = Join-Path -Path $moduleDir -ChildPath $ModuleName
+Copy-Item -Path $foundModulePath -Destination $destPath -Recurse -Force
+Write-Output "Copied Module '$ModuleName' to: $destPath"
