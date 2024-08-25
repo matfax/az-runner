@@ -14,6 +14,15 @@ if ($null -eq $Request.Headers["X-Hub-Signature-256"]) {
     return
 }
 
+# Ensure that env:GITHUB_WEBHOOK_SECRET is defined
+if ($null -eq $env:GITHUB_WEBHOOK_SECRET) {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::InternalServerError
+        Body = "Missing environment variables on system."
+    })
+    return
+}
+
 # Calculate HMAC signature
 try {
     $hmacsha = New-Object System.Security.Cryptography.HMACSHA256
@@ -27,7 +36,7 @@ try {
 catch {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
-        Body = "Failed to process JSON for HMAC."
+        Body = "Failed to process JSON for HMAC from input: $compressedJson"
     })
     return
 }
