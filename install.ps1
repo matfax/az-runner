@@ -3,8 +3,8 @@ param(
     [string]$ModuleName
 )
 
-# Check if the Module directory exists, create it if not
-$moduleDir = "./Module"
+# Check if the Modules directory exists, create it if not
+$moduleDir = "./Modules"
 if (!(Test-Path $moduleDir)) {
     New-Item -ItemType Directory -Force -Path $moduleDir | Out-Null
     Write-Output "Created directory: $moduleDir"
