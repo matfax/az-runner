@@ -28,7 +28,7 @@
         {
             "customType": "regex",
             "fileMatch": ["^deploy.yml$"],
-            "matchStrings": ["modules-to-cache:\\s*'?(?<depName>\\w+?):?(?<currentValue>[0-9\\.]*?)'?\\s*\\n"],
+            "matchStrings": ["modules-to-cache:\\s*['\"]?(?<depName>\\w+?):?(?<currentValue>[0-9.]*?)['\"]?\\s*\\n"],
             "datasourceTemplate": "nuget",
             "registryUrlTemplate": "https://www.powershellgallery.com/api/v2/"
         }
