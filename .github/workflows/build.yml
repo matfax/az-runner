@@ -12,6 +12,7 @@ on:
         - '*.json'
         - '*.md'
         - 'startup/*'
+        - 'test/*'
 
 permissions:
   id-token: write
