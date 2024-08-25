@@ -5,6 +5,15 @@ param($Request, $TriggerMetadata)
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
 
+# Ensure that the header contains 'workflow_job' event
+if ($Request.Headers["X-GitHub-Event"] -ne "workflow_job") {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::Continue
+        Body = "Irrelevant event type: expected 'workflow_job'."
+    })
+    return
+}
+
 # Ensure that header contains HMAC
 if ($null -eq $Request.Headers["X-Hub-Signature-256"]) {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
@@ -36,7 +45,7 @@ try {
 catch {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
-        Body = "Failed to process JSON for HMAC from payload: $compressedJson"
+Body = "Failed to process JSON for HMAC from payload with size: $($Request.Body.Length) bytes."
     })
     return
 }
@@ -45,21 +54,12 @@ catch {
 if ($computedSignature -ne $receivedSignature) {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
-        Body = "Invalid authorization signature for payload: $compressedJson"
+        Body = "Invalid authorization signature for payload with size: $($Request.Body.Length) bytes."
     })
     return
 }
 
 $Payload = $Request.Body
-
-# Ensure that the header contains 'workflow_job' event
-if ($Request.Headers["X-GitHub-Event"] -ne "workflow_job") {
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = [HttpStatusCode]::Continue
-        Body = "Invalid header 'X-GitHub-Event'. Expected 'workflow_job'."
-    })
-    return
-}
 
 # Ensure that the webhook type is 'workflow_job'
 if ($null -eq $Payload.workflow_job) {
@@ -70,10 +70,7 @@ if ($null -eq $Payload.workflow_job) {
     return
 }
 
-# Assign the workflow_job object to a new variable
 $workflowJob = $Payload.workflow_job
-
-# Now you can use $workflowJob to access the workflow job data
 
 # Check if the workflow job is queued
 if ($Payload.action -ne "queued") {
