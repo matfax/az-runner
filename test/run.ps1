@@ -8,5 +8,5 @@ Write-Host "PowerShell HTTP trigger function processed a test request."
 # Return the response
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = 200
-    Body = "Hello World!"
+    Body = $Request.Body
 })

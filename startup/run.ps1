@@ -6,7 +6,7 @@ param($Request, $TriggerMetadata)
 Write-Host "PowerShell HTTP trigger function processed a request."
 
 $hmacsha = New-Object System.Security.Cryptography.HMACSHA256
-$hmacsha.Key = [Text.Encoding]::ASCII.GetBytes($env:GITHUB_WEBHOOK_SECRET)
+$hmacsha.Key = [Text.Encoding]::UTF8.GetBytes($env:GITHUB_WEBHOOK_SECRET)
 $payloadBytes = [Text.Encoding]::UTF8.GetBytes($Request.Body)
 $computedHash = $hmacsha.ComputeHash($payloadBytes)
 $computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower()
@@ -15,12 +15,10 @@ $receivedSignature = $Request.Headers['X-Hub-Signature-256']
 if ($computedSignature -ne $receivedSignature) {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
-        Body = "Invalid authorization signature."
+        Body = "Invalid authorization signature, expected $computedSignature."
     })
     return
 }
-
-$Payload = $null
 
 try {
     $Payload = $Request.Body | ConvertTo-Json -ErrorAction Stop
