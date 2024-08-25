@@ -5,17 +5,45 @@ param($Request, $TriggerMetadata)
 # Write to the Azure Functions log stream.
 Write-Host "PowerShell HTTP trigger function processed a request."
 
+$hmacsha = New-Object System.Security.Cryptography.HMACSHA256
+$hmacsha.Key = [Text.Encoding]::ASCII.GetBytes($env:GITHUB_WEBHOOK_SECRET)
+$payloadBytes = [Text.Encoding]::UTF8.GetBytes($Request.Body)
+$computedHash = $hmacsha.ComputeHash($payloadBytes)
+$computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower()
+$receivedSignature = $Request.Headers['X-Hub-Signature-256']
+
+if ($computedSignature -ne $receivedSignature) {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::Unauthorized
+        Body = "Invalid authorization signature."
+    })
+    return
+}
+
+$Payload = $null
+
+try {
+    $Payload = $Request.Body | ConvertTo-Json -ErrorAction Stop
+}
+catch {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::BadRequest
+        Body = "Failed to parse JSON payload: $_"
+    })
+    return
+}
+
 # Ensure that the header contains 'workflow_job' event
 if ($Request.Headers["X-GitHub-Event"] -ne "workflow_job") {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = [HttpStatusCode]::BadRequest
+        StatusCode = [HttpStatusCode]::Continue
         Body = "Invalid header 'X-GitHub-Event'. Expected 'workflow_job'."
     })
     return
 }
 
 # Ensure that the webhook type is 'workflow_job'
-if ($null -eq $Request.Body.workflow_job) {
+if ($null -eq $Payload.workflow_job) {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
         Body = "Invalid webhook event type. Expected 'workflow_job'."
@@ -24,14 +52,14 @@ if ($null -eq $Request.Body.workflow_job) {
 }
 
 # Assign the workflow_job object to a new variable
-$workflowJob = $Request.Body.workflow_job
+$workflowJob = $Payload.workflow_job
 
 # Now you can use $workflowJob to access the workflow job data
 
 # Check if the workflow job is queued
-if ($Request.Body.action -ne "queued") {
+if ($Payload.action -ne "queued") {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = [HttpStatusCode]::OK
+        StatusCode = [HttpStatusCode]::Continue
         Body = "Ignoring non-queued workflow job trigger."
     })
     return
@@ -42,14 +70,14 @@ $ labels = $workflowJob.labels
 
 if ($labels -notcontains "azure" || $labels -notcontains "production") {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = [HttpStatusCode]::OK
+        StatusCode = [HttpStatusCode]::Continue
         Body = "Ignoring job without the 'azure' and 'production' runner labels."
     })
     return
 }
 
 # Check if the request contains repository data
-$repo = $Request.Body.repository
+$repo = $Payload.repository
 if (-not $repo) {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
