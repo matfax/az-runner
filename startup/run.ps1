@@ -47,7 +47,7 @@ try {
 catch {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
-Body = "Failed to process JSON for HMAC from payload with size: $($Request.Body.Length) bytes."
+        Body = "Failed to process JSON for HMAC from payload with size $($Request.Body.Length) bytes: $compressedJson"
     })
     return
 }
@@ -56,7 +56,7 @@ Body = "Failed to process JSON for HMAC from payload with size: $($Request.Body.
 if ($computedSignature -ne $receivedSignature) {
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
-        Body = "Invalid authorization signature for payload with size: $($Request.Body.Length) bytes."
+        Body = "Invalid authorization signature for payload with size $($Request.Body.Length) bytes: $compressedJson"
     })
     return
 }
