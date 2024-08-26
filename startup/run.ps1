@@ -101,7 +101,9 @@ $labels = $workflowJob.labels
 if ($labels -notcontains "azure" || $labels -notcontains "production") {
     Write-Information "[SKIPPING] Ignoring job without the 'azure' and 'production' runner labels"
     Write-Debug "Actual Labels:"
-    Write-Debug $labels
+    foreach ($label in $labels) {
+        Write-Debug "- $label"
+    }
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Continue
         Body = "Ignoring job without the 'azure' and 'production' runner labels"
