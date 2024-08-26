@@ -3,7 +3,7 @@ using namespace System.Net
 param($Request, $TriggerMetadata)
 
 # Write to the Azure Functions log stream.
-Write-Verbose "[INFO] Running startup script..."
+Write-Information "[INFO] Running startup script..."
 
 # Ensure that the header contains 'workflow_job' event
 $eventType = $Request.Headers["X-GitHub-Event"]
@@ -38,21 +38,21 @@ if ($null -eq $env:GITHUB_WEBHOOK_SECRET) {
 
 # Calculate HMAC signature
 try {
-    Write-Verbose "[INFO] Calculating HMAC of payload..."
+    Write-Information "[INFO] Calculating HMAC of payload..."
     $hmacsha = New-Object System.Security.Cryptography.HMACSHA256
     $hmacsha.Key = [Text.Encoding]::UTF8.GetBytes($env:GITHUB_WEBHOOK_SECRET)
     $payloadBytes = [Text.Encoding]::UTF8.GetBytes($Request.rawbody)
     $computedHash = $hmacsha.ComputeHash($payloadBytes)
     $computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower().Replace("-", "")
-    Write-Verbose "Computed hash: $computedSignature"
+    Write-Information "Computed hash: $computedSignature"
 
     $receivedSignature = $Request.Headers['X-Hub-Signature-256']
-    Write-Verbose "Received hash: $receivedSignature"
+    Write-Information "Received hash: $receivedSignature"
 }
 catch {
     Write-Error "[ERROR] Error calculating HMAC signature: $_"
-    Write-Debug "Raw Payload:"
-    Write-Debug $Request.rawbody
+    Write-Host "Raw Payload:"
+    Write-Host $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
         Body = "Failed to calculate HMAC for payload"
@@ -63,7 +63,7 @@ catch {
 # Verify HMAC signature
 if ($computedSignature -ne $receivedSignature) {
     Write-Error "[ERROR] Invalid HMAC signature for payload with size $($Request.rawbody.Length) bytes:"
-    Write-Debug $Request.rawbody
+    Write-Host $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
         Body = "Invalid HMAC signature for payload"
@@ -74,8 +74,8 @@ if ($computedSignature -ne $receivedSignature) {
 # Ensure that the webhook type is 'workflow_job'
 if ($null -eq $Request.Body.workflow_job) {
     Write-Error "[ERROR] Unable to find 'workflow_job' element in payload"
-    Write-Debug "Raw Payload:"
-    Write-Debug $Request.rawbody
+    Write-Host "Raw Payload:"
+    Write-Host $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
         Body = "Invalid webhook payload"
@@ -100,9 +100,9 @@ $labels = $workflowJob.labels
 
 if ($labels -notcontains "azure" || $labels -notcontains "production") {
     Write-Information "[SKIPPING] Ignoring job without the 'azure' and 'production' runner labels"
-    Write-Debug "Actual Labels:"
+    Write-Host "Actual Labels:"
     foreach ($label in $labels) {
-        Write-Debug "- $label"
+        Write-Host "- $label"
     }
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Continue
@@ -137,9 +137,9 @@ $githubToken = $Request.Headers["X-MS-TOKEN-GITHUB-INSTALLATION-TOKEN"]
 # Ensure all required variables are present
 if (-not ($acrPassword -and $githubToken)) {
     Write-Error "[ERROR] One or more required environment variables or secrets are inaccessible or missing"
-    Write-Debug "Headers:"
+    Write-Host "Headers:"
     foreach ($header in $Request.Headers.Keys) {
-        Write-Debug "- ${header}: $($Request.Headers[$header])"
+        Write-Host "- ${header}: $($Request.Headers[$header])"
     }
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
@@ -153,7 +153,7 @@ $createScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "../create.ps1"
 
 # Call create.ps1 with the required parameters
 try {
-    Write-Verbose "[INFO] Calling create.ps1..."
+    Write-Information "[INFO] Calling create.ps1..."
 
     & $createScriptPath `
         -ContainerGroupName $containerGroupName `

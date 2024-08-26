@@ -3,10 +3,10 @@
   "logging": {
     "fileLoggingMode": "debugOnly",
     "logLevel": {
-      "default": "Trace",
-      "Host.Results": "Trace",
-      "Function": "Trace",
-      "Host.Aggregator": "Trace"
+      "default": "Information",
+      "Host.Results": "Information",
+      "Function": "Information",
+      "Host.Aggregator": "Information"
     },
     "applicationInsights": {
       "samplingSettings": {
