@@ -22,7 +22,6 @@
         "dependencies",
         "chore"
     ],
-    "ignorePaths": ["**/caching/**"],
     "commitBody": "Signed-off-by: {{{gitAuthor}}}",
     "customManagers": [
         {
@@ -30,8 +29,8 @@
             "fileMatch": ["deploy\\.yml$"],
             "matchStringsStrategy": "recursive",
             "matchStrings": [
-                "modules-to-cache:\\s+(\\|\\n)?",
-                "\\s*['\"]?(?<depName>\\w+)[:]{0,2}(?<currentValue>[0-9\\.]*)[,'\"]?\\s*\\n"
+                "modules-to-cache:\\s+\\|?",
+                "\\s*['\"]?(?<depName>\\w+)[:]{0,2}(?<currentValue>[0-9\\.]*)[,'\"]?\\s*"
             ],
             "datasourceTemplate": "nuget",
             "registryUrlTemplate": "https://www.powershellgallery.com/api/v2/"
