@@ -50,7 +50,6 @@ jobs:
         run: |
           ./install.ps1 -ModuleName Az
           ./install.ps1 -ModuleName Az.Accounts
-          ./install.ps1 -ModuleName Az.KeyVault
           ./install.ps1 -ModuleName Az.ContainerInstance
       
       - name: Login to Azure
