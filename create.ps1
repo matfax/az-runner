@@ -92,7 +92,7 @@ New-AzContainerGroup `
     -Location $Location `
     -Container $container `
     -OsType Linux `
-    -RestartPolicy Never `
+    -RestartPolicy 'Always' `
     -ImageRegistryCredential $imageRegistryCredential
 
 Write-Host "Container group '$ContainerGroupName' created successfully." -ForeGroundColor Green
