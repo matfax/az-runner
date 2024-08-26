@@ -40,11 +40,15 @@ jobs:
       - name: install and cache PowerShell modules
         uses: potatoqualitee/psmodulecache@8a705c639dc276dfe651189abf11544c5080d384 # v6.2
         with:
-          modules-to-cache: 'Az:12.1.0'
+          modules-to-cache: |
+            Az:12.1.0,
+            Az.Accounts:2.2.3
 
-      - name: copy Az module into project
+      - name: copy Azure modules into project
         shell: powershell
-        run: ./install.ps1 -ModuleName Az
+        run: |
+          ./install.ps1 -ModuleName Az
+          ./install.ps1 -ModuleName Az.Accounts
       
       - name: Login to Azure
         uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
