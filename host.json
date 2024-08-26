@@ -1,15 +1,18 @@
 {
   "version": "2.0",
   "logging": {
+    "fileLoggingMode": "debugOnly",
     "logLevel": {
-      "default": "Information",
-      "Host.Results": "Error",
+      "default": "Trace",
+      "Host.Results": "Trace",
       "Function": "Trace",
       "Host.Aggregator": "Trace"
     },
     "applicationInsights": {
       "samplingSettings": {
-        "isEnabled": true
+        "isEnabled": true,
+        "maxTelemetryItemsPerSecond" : 20,
+        "excludedTypes": "Request;Exception"
       }
     }
   },
