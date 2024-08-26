@@ -16,15 +16,16 @@ $42MinAgo = $currentTime.AddMinutes(-42)
 $containerGroups = Get-AzContainerGroup -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
 
 foreach($group in $containerGroups) {
-    $name = $group.Container.Name
-    $startTime = $group.Container.CurrentStateStartTime
+    $details = $group | Get-AzContainerGroup
+    $name = $details.Container.Name
+    $startTime = [datetime]$details.Container.CurrentStateStartTime
 
     Write-Verbose "[INFO] Start time of $name\: $startTime"
 
     if ($startTime -le $42MinAgo) {
         $diffTime = $currentTime - $startTime
-        $diffMins = $diffTime.Minute
-        Write-Information "[INFO] Cleaning up $name ($diffMins unused)..."
+        $diffMins = $diffTime.TotalMinutes
+        Write-Information "[INFO] Cleaning up $name ($diffMins minutes unused)..."
         $group | Remove-AzContainerGroup
     }
 }
