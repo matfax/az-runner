@@ -44,6 +44,7 @@ jobs:
             Az:12.1.0,
             Az.Accounts:2.2.3,
             Az.KeyVault:4.7.0
+            Az.ContainerInstance:1.0.0
 
       - name: copy Azure modules into project
         shell: powershell
@@ -51,6 +52,7 @@ jobs:
           ./install.ps1 -ModuleName Az
           ./install.ps1 -ModuleName Az.Accounts
           ./install.ps1 -ModuleName Az.KeyVault
+          ./install.ps1 -ModuleName Az.ContainerInstance
       
       - name: Login to Azure
         uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
