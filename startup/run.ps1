@@ -132,14 +132,18 @@ $containerGroupName = "az-runner-$orgOrUser-$repoName"
 # Get environment variables and secrets
 $acrPassword = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-acr-token
 #$githubToken = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-github-registration-access -AsPlainText
-$githubToken = $Request.Headers["X-MS-TOKEN-GITHUB-ID-TOKEN"]
+$githubToken = $Request.Headers["X-MS-TOKEN-GITHUB-INSTALLATION-TOKEN"]
 
 # Ensure all required variables are present
 if (-not ($acrPassword -and $githubToken)) {
     Write-Error "[ERROR] One or more required environment variables or secrets are inaccessible or missing"
+    Write-Debug "Headers:"
+    foreach ($header in $Request.Headers.Keys) {
+        Write-Debug "- ${header}: $($Request.Headers[$header])"
+    }
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
-        Body = "Internal system error"
+        Body = "Internal System Error"
     })
     return
 }
