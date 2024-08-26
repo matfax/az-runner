@@ -22,9 +22,11 @@ foreach($group in $containerGroups) {
     Write-Verbose "[INFO] Start time of $name\: $startTime"
 
     if ($startTime -le $42MinAgo) {
-        Write-Information "[INFO] Cleaning up $name..."
+        $diffTime = $currentTime - $startTime
+        $diffMins = $diffTime.Minute
+        Write-Information "[INFO] Cleaning up $name ($diffMins unused)..."
         $group | Remove-AzContainerGroup
     }
 }
 
-Write-Information "[INFO] Cleanup complete"
+Write-Information "[INFO] Cleanup complete!"
