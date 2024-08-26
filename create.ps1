@@ -101,3 +101,4 @@ New-AzContainerGroup `
     -NoWait:$NoWait
     
 Write-Host "Container group '$ContainerGroupName' created successfully." -ForeGroundColor Green
+return $true

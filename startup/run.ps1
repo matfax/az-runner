@@ -141,7 +141,7 @@ try {
         -Labels "linux,x64,azure,production" `
         -NoWait
 
-    if ($null -eq $containerGroup) {
+    if ($true -eq $containerGroup) {
         $responseBody = "Successfully created container group"
         $statusCode = [HttpStatusCode]::Created
     } else {
