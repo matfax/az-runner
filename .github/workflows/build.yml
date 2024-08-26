@@ -12,6 +12,7 @@ on:
         - '*.json'
         - '*.md'
         - 'startup/*'
+        - 'cleanup/*'
         - 'test/*'
 
 permissions:

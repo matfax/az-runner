@@ -9,6 +9,7 @@ on:
         - '*.json'
         - '.github/workflows/deploy.yml'
         - 'startup/*'
+        - 'cleanup/*'
         - 'test/*'
   workflow_call:
     inputs:

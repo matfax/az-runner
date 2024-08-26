@@ -1,12 +1,12 @@
 # Input bindings are passed in via param block.
 param($Timer)
 
-Write-Information "Cleaning up superfluous runners..."
+Write-Information "[INFO] Cleaning up superfluous runners..."
 
 $ResourceGroupName = $env:AZ_RES_GROUP
 
 if ($null -eq $ResourceGroupName) {
-    Write-Error "Environment variable 'AZ_RES_GROUP' not set." -ErrorAction Stop
+    Write-Error "[ERROR] Environment variable 'AZ_RES_GROUP' not set" -ErrorAction Stop
 }
 
 $currentTime = [datetime]::Now()
@@ -19,10 +19,12 @@ foreach($group in $containerGroups) {
     $name = $group.Container.Name
     $startTime = $group.Container.CurrentStateStartTime
 
-    Write-Verbose "Start time of $name\: $startTime"
+    Write-Verbose "[INFO] Start time of $name\: $startTime"
 
     if ($startTime -le $42MinAgo) {
-        Write-Information "Cleaning up $name..."
+        Write-Information "[INFO] Cleaning up $name..."
         $group | Remove-AzContainerGroup
     }
 }
+
+Write-Information "[INFO] Cleanup complete"
