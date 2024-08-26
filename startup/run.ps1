@@ -44,15 +44,15 @@ try {
     $payloadBytes = [Text.Encoding]::UTF8.GetBytes($Request.rawbody)
     $computedHash = $hmacsha.ComputeHash($payloadBytes)
     $computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower().Replace("-", "")
-    Write-Information "Computed hash: $computedSignature"
+    Write-Verbose "Computed hash: $computedSignature"
 
     $receivedSignature = $Request.Headers['X-Hub-Signature-256']
-    Write-Information "Received hash: $receivedSignature"
+    Write-Verbose "Received hash: $receivedSignature"
 }
 catch {
     Write-Error "[ERROR] Error calculating HMAC signature: $_"
-    Write-Host "Raw Payload:"
-    Write-Host $Request.rawbody
+    Write-Verbose "Raw Payload:"
+    Write-Verbose $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
         Body = "Failed to calculate HMAC for payload"
@@ -63,7 +63,7 @@ catch {
 # Verify HMAC signature
 if ($computedSignature -ne $receivedSignature) {
     Write-Error "[ERROR] Invalid HMAC signature for payload with size $($Request.rawbody.Length) bytes:"
-    Write-Host $Request.rawbody
+    Write-Verbose $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
         Body = "Invalid HMAC signature for payload"
@@ -74,8 +74,8 @@ if ($computedSignature -ne $receivedSignature) {
 # Ensure that the webhook type is 'workflow_job'
 if ($null -eq $Request.Body.workflow_job) {
     Write-Error "[ERROR] Unable to find 'workflow_job' element in payload"
-    Write-Host "Raw Payload:"
-    Write-Host $Request.rawbody
+    Write-Verbose "Raw Payload:"
+    Write-Verbose $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
         Body = "Invalid webhook payload"
@@ -100,9 +100,9 @@ $labels = $workflowJob.labels
 
 if ($labels -notcontains "azure" || $labels -notcontains "production") {
     Write-Information "[SKIPPING] Ignoring job without the 'azure' and 'production' runner labels"
-    Write-Host "Actual Labels:"
+    Write-Verbose "Actual Labels:"
     foreach ($label in $labels) {
-        Write-Host "- $label"
+        Write-Verbose "- $label"
     }
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Continue
@@ -131,16 +131,11 @@ $containerGroupName = "az-runner-$orgOrUser-$repoName"
 
 # Get environment variables and secrets
 $acrPassword = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-acr-token
-#$githubToken = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-github-registration-access -AsPlainText
-$githubToken = $Request.Headers["X-MS-TOKEN-GITHUB-INSTALLATION-TOKEN"]
+$githubToken = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-github-registration-access -AsPlainText
 
 # Ensure all required variables are present
 if (-not ($acrPassword -and $githubToken)) {
     Write-Error "[ERROR] One or more required environment variables or secrets are inaccessible or missing"
-    Write-Host "Headers:"
-    foreach ($header in $Request.Headers.Keys) {
-        Write-Host "- ${header}: $($Request.Headers[$header])"
-    }
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
         Body = "Internal System Error"

@@ -1,7 +1,6 @@
 {
   "version": "2.0",
   "logging": {
-    "fileLoggingMode": "debugOnly",
     "logLevel": {
       "default": "Information",
       "Host.Results": "Information",
@@ -10,9 +9,7 @@
     },
     "applicationInsights": {
       "samplingSettings": {
-        "isEnabled": true,
-        "maxTelemetryItemsPerSecond" : 20,
-        "excludedTypes": "Request;Exception"
+        "isEnabled": true
       }
     }
   },
