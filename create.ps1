@@ -56,14 +56,13 @@ try {
     $secureRegToken = ConvertTo-SecureString $regToken -AsPlainText -Force
 
     if ($null -eq $secureRegToken) {
-        Write-Error "Failed to convert token to secure string"
-        throw "Failed to convert token to secure string"
+        Write-Error "Failed to convert token to secure string." -ErrorAction Stop
     }
 
-    Write-Output "Registration token obtained and stored as a secure string"
+    Write-Output "Registration token obtained and stored as a secure string."
 }
 catch {
-    throw "Failed to obtain registration token"
+    Write-Error "Failed to obtain registration token" -ErrorAction Stop
 }
 
 # Define environment variables
