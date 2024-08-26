@@ -129,23 +129,10 @@ $repoName = $repo.name
 # Construct the container group name
 $containerGroupName = "az-runner-$orgOrUser-$repoName"
 
-# Check the token expiration date
-$tokenExpiration = [datetime]::Parse($Request.Headers["X-MS-TOKEN-GITHUB-EXPIRES-ON"])
-$currentTime = [datetime]::UtcNow
-
-if ($tokenExpiration -lt $currentTime) {
-    Write-Error "[ERROR] GitHub App access token has expired"
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = [HttpStatusCode]::Unauthorized
-        Body = "GitHub App access token has expired"
-    })
-    return
-}
-
 # Get environment variables and secrets
 $acrPassword = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-acr-token
 #$githubToken = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-github-registration-access -AsPlainText
-$githubToken = $Request.Headers["X-MS-TOKEN-GITHUB-ACCESS-TOKEN"]
+$githubToken = $Request.Headers["X-MS-TOKEN-GITHUB-ID-TOKEN"]
 
 # Ensure all required variables are present
 if (-not ($acrPassword -and $githubToken)) {
