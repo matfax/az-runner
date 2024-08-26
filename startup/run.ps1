@@ -129,20 +129,6 @@ $repoName = $repo.name
 # Construct the container group name
 $containerGroupName = "az-runner-$orgOrUser-$repoName"
 
-# Get environment variables and secrets
-$acrPassword = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-acr-token
-$githubToken = Get-AzKeyVaultSecret -VaultName $env:AZ_KV_NAME -Name az-runner-github-registration-access -AsPlainText
-
-# Ensure all required variables are present
-if (-not ($acrPassword -and $githubToken)) {
-    Write-Error "[ERROR] One or more required environment variables or secrets are inaccessible or missing"
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = [HttpStatusCode]::InternalServerError
-        Body = "Internal System Error"
-    })
-    return
-}
-
 # Construct the path to create.ps1
 $createScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "../create.ps1"
 
@@ -152,9 +138,7 @@ try {
 
     & $createScriptPath `
         -ContainerGroupName $containerGroupName `
-        -ACRPassword $acrPassword `
         -GithubRepository "$orgOrUser/$repoName" `
-        -GithubToken $githubToken `
         -Labels "linux,x64,azure,production"
 
     $responseBody = "Successfully created container group: $containerGroupName"
