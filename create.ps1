@@ -17,6 +17,12 @@ param (
     [string]$GithubToken = $env:GITHUB_PAT,
     [Parameter(Mandatory=$true)]
     [string]$Labels,
+    [Parameter(Mandatory=$false)]
+    [int]$RequestCpu=1,
+    [Parameter(Mandatory=$false)]
+    [int]$RequestMemory=2,
+    [Parameter(Mandatory=$false)]
+    [switch]$NoWait,
     [Parameter(ValueFromRemainingArguments=$true)]
     [string[]]$ExtraArgs
 )
@@ -25,10 +31,10 @@ param (
 $containerGroup = Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
 
 if ($containerGroup) {
-    Write-Output "Container group '$ContainerGroupName' already exists."
+    Write-Information "Container group '$ContainerGroupName' already exists."
     return $containerGroup
 } else {
-    Write-Output "Container group '$ContainerGroupName' does not exist. Creating..."
+    Write-Information "Container group '$ContainerGroupName' does not exist. Creating..."
 }
 
 # GitHub API URL
@@ -41,8 +47,6 @@ $headers = @{
     "X-GitHub-Api-Version" = "2022-11-28"
 }
 
-$secureRegToken = $null
-
 # Make the API request
 try {
     $response = Invoke-RestMethod -Uri $apiUrl -Method Post -Headers $headers
@@ -52,13 +56,14 @@ try {
     $secureRegToken = ConvertTo-SecureString $regToken -AsPlainText -Force
 
     if ($null -eq $secureRegToken) {
-        throw "Failed to convert token to secure string."
+        Write-Error "Failed to convert token to secure string"
+        throw "Failed to convert token to secure string"
     }
 
-    Write-Output "Registration token obtained and stored as a secure string."
+    Write-Output "Registration token obtained and stored as a secure string"
 }
 catch {
-    throw "Failed to obtain registration token."
+    throw "Failed to obtain registration token"
 }
 
 # Define environment variables
@@ -75,8 +80,8 @@ $runnerTokenEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER
 $container = New-AzContainerInstanceObject `
     -Name $ContainerGroupName `
     -Image "$ACRName.azurecr.io/az-runner" `
-    -RequestCpu 1 `
-    -RequestMemoryInGb 2 `
+    -RequestCpu $RequestCpu `
+    -RequestMemoryInGb $RequestMemory `
     -EnvironmentVariable @($runnerTokenEnv, $repoEnv, $runnerNameEnv, $runnerGroupEnv, $runnerScopeEnv, $labelsEnv, $ephemeralEnv)
 
 # Define image registry credentials
@@ -93,6 +98,7 @@ New-AzContainerGroup `
     -Container $container `
     -OsType Linux `
     -RestartPolicy 'Always' `
-    -ImageRegistryCredential $imageRegistryCredential
-
+    -ImageRegistryCredential $imageRegistryCredential `
+    -NoWait:$NoWait
+    
 Write-Host "Container group '$ContainerGroupName' created successfully." -ForeGroundColor Green

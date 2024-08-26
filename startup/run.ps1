@@ -138,11 +138,12 @@ try {
     $containerGroup = & $createScriptPath `
         -ContainerGroupName $containerGroupName `
         -GithubRepository "$orgOrUser/$repoName" `
-        -Labels "linux,x64,azure,production"
+        -Labels "linux,x64,azure,production" `
+        -NoWait
 
     if ($null -eq $containerGroup) {
         $responseBody = "Successfully created container group"
-        $statusCode = [HttpStatusCode]::OK
+        $statusCode = [HttpStatusCode]::Created
     } else {
         $responseBody = "Container group already exists"
         $statusCode = [HttpStatusCode]::AlreadyReported
