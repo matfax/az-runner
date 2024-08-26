@@ -26,7 +26,7 @@ $containerGroup = Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupN
 
 if ($containerGroup) {
     Write-Output "Container group '$ContainerGroupName' already exists."
-    return
+    return $containerGroup
 } else {
     Write-Output "Container group '$ContainerGroupName' does not exist. Creating..."
 }

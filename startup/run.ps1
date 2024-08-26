@@ -10,7 +10,7 @@ $eventType = $Request.Headers["X-GitHub-Event"]
 if ($eventType -ne "workflow_job") {
     Write-Information "[SKIPPING] Irrelevant event type '$eventType'"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = [HttpStatusCode]::Continue
+        StatusCode = [HttpStatusCode]::NoContent
         Body = "Irrelevant event type '$eventType', expected 'workflow_job'"
     })
     return
@@ -38,7 +38,6 @@ if ($null -eq $env:GITHUB_WEBHOOK_SECRET) {
 
 # Calculate HMAC signature
 try {
-    Write-Information "[INFO] Calculating HMAC of payload..."
     $hmacsha = New-Object System.Security.Cryptography.HMACSHA256
     $hmacsha.Key = [Text.Encoding]::UTF8.GetBytes($env:GITHUB_WEBHOOK_SECRET)
     $payloadBytes = [Text.Encoding]::UTF8.GetBytes($Request.rawbody)
@@ -89,7 +88,7 @@ $workflowJob = $Request.Body.workflow_job
 if ($Request.Body.action -ne "queued") {
     Write-Information "[SKIPPING] Trigger action of workflow job is not 'queued'"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = [HttpStatusCode]::Continue
+        StatusCode = [HttpStatusCode]::NoContent
         Body = "Ignoring trigger of non-queued workflow job"
     })
     return
@@ -105,7 +104,7 @@ if ($labels -notcontains "azure" || $labels -notcontains "production") {
         Write-Verbose "- $label"
     }
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = [HttpStatusCode]::Continue
+        StatusCode = [HttpStatusCode]::NoContent
         Body = "Ignoring job without the 'azure' and 'production' runner labels"
     })
     return
@@ -136,14 +135,20 @@ $createScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "../create.ps1"
 try {
     Write-Information "[INFO] Calling create.ps1..."
 
-    & $createScriptPath `
+    $containerGroup = & $createScriptPath `
         -ContainerGroupName $containerGroupName `
         -GithubRepository "$orgOrUser/$repoName" `
         -Labels "linux,x64,azure,production"
 
-    $responseBody = "Successfully created container group: $containerGroupName"
-    $statusCode = [HttpStatusCode]::OK
+    if ($null -eq $containerGroup) {
+        $responseBody = "Successfully created container group"
+        $statusCode = [HttpStatusCode]::OK
+    } else {
+        $responseBody = "Container group already exists"
+        $statusCode = [HttpStatusCode]::AlreadyReported
+    }
 }
+
 catch {
     Write-Error "[ERROR] Error creating container group: $_"
     $responseBody = "Failed to create container group: $_"
