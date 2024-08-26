@@ -9,7 +9,7 @@ if ($null -eq $ResourceGroupName) {
     Write-Error "[ERROR] Environment variable 'AZ_RES_GROUP' not set" -ErrorAction Stop
 }
 
-$currentTime = [datetime]::Now()
+$currentTime = [datetime]::UtcNow
 $42MinAgo = $currentTime.AddMinutes(-42)
 
 # Check if container group already exists
