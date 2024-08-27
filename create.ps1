@@ -30,7 +30,7 @@ param (
 # Check if container group already exists
 $containerGroup = Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
 
-Write-Information "Container group '$ContainerGroupName' exists: ${$null -ne $containerGroup}"
+Write-Information "Container group '$ContainerGroupName' exists: $($null -ne $containerGroup)"
 if ($containerGroup) {
     Write-Output "Container group already exists."
     return $containerGroup
