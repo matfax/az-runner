@@ -30,15 +30,13 @@ param (
 # Check if container group already exists
 $containerGroup = Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
 
+Write-Information "Container group '$ContainerGroupName' exists: ${$null -ne $containerGroup}"
 if ($containerGroup) {
     Write-Output "Container group already exists."
-    Write-Information "Container Group Exists: TRUE"
     return $containerGroup
 } else {
     Write-Output "Container group does not exist; creating..."
-    Write-Information "Container Group Exists: FALSE"
 }
-Write-Information "Container Group Name: $ContainerGroupName"
 
 # GitHub API URL
 $apiUrl = "https://api.github.com/repos/$GithubRepository/actions/runners/registration-token"
@@ -58,7 +56,7 @@ try {
     # Convert the registration token to a SecureString
     $secureRegToken = ConvertTo-SecureString $regToken -AsPlainText -Force
 
-    if ($null -eq $secureRegToken) {
+    if (-not $secureRegToken) {
         Write-Error "Failed to convert token to secure string." -ErrorAction Stop
     }
 

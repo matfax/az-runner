@@ -17,7 +17,7 @@ if ($eventType -ne "workflow_job") {
 }
 
 # Ensure that header contains HMAC
-if ($null -eq $Request.Headers["X-Hub-Signature-256"]) {
+if (-not $Request.Headers["X-Hub-Signature-256"]) {
     Write-Warning "Missing HMAC signature in header"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
@@ -27,7 +27,7 @@ if ($null -eq $Request.Headers["X-Hub-Signature-256"]) {
 }
 
 # Ensure that env:GITHUB_WEBHOOK_SECRET is defined
-if ($null -eq $env:GITHUB_WEBHOOK_SECRET) {
+if (-not $env:GITHUB_WEBHOOK_SECRET) {
     Write-Error "Missing environment variable 'GITHUB_WEBHOOK_SECRET'"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
@@ -71,7 +71,7 @@ if ($computedSignature -ne $receivedSignature) {
 }
 
 # Ensure that the webhook type is 'workflow_job'
-if ($null -eq $Request.Body.workflow_job) {
+if (-not $Request.Body.workflow_job) {
     Write-Error "Unable to find 'workflow_job' element in payload"
     Write-Verbose "Raw Payload:"
     Write-Verbose $Request.rawbody
