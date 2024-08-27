@@ -31,11 +31,14 @@ param (
 $containerGroup = Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
 
 if ($containerGroup) {
-    Write-Information "Container group '$ContainerGroupName' already exists."
+    Write-Output "Container group already exists."
+    Write-Information "Container Group Exists: TRUE"
     return $containerGroup
 } else {
-    Write-Information "Container group '$ContainerGroupName' does not exist. Creating..."
+    Write-Output "Container group does not exist; creating..."
+    Write-Information "Container Group Exists: FALSE"
 }
+Write-Information "Container Group Name: $ContainerGroupName"
 
 # GitHub API URL
 $apiUrl = "https://api.github.com/repos/$GithubRepository/actions/runners/registration-token"

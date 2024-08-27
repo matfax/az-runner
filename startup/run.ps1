@@ -3,7 +3,7 @@ using namespace System.Net
 param($Request, $TriggerMetadata)
 
 # Write to the Azure Functions log stream.
-Write-Information "[INFO] Running startup script..."
+Write-Information "Running startup script..."
 
 # Ensure that the header contains 'workflow_job' event
 $eventType = $Request.Headers["X-GitHub-Event"]
@@ -18,7 +18,7 @@ if ($eventType -ne "workflow_job") {
 
 # Ensure that header contains HMAC
 if ($null -eq $Request.Headers["X-Hub-Signature-256"]) {
-    Write-Warning "[WARNING] Missing HMAC signature in header"
+    Write-Warning "Missing HMAC signature in header"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
         Body = "Missing HMAC signature in header"
@@ -28,7 +28,7 @@ if ($null -eq $Request.Headers["X-Hub-Signature-256"]) {
 
 # Ensure that env:GITHUB_WEBHOOK_SECRET is defined
 if ($null -eq $env:GITHUB_WEBHOOK_SECRET) {
-    Write-Error "[ERROR] Missing environment variable 'GITHUB_WEBHOOK_SECRET'"
+    Write-Error "Missing environment variable 'GITHUB_WEBHOOK_SECRET'"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
         Body = "Missing environment variables on system"
@@ -49,7 +49,7 @@ try {
     Write-Verbose "Received hash: $receivedSignature"
 }
 catch {
-    Write-Error "[ERROR] Error calculating HMAC signature: $_"
+    Write-Error "Error calculating HMAC signature: $_"
     Write-Verbose "Raw Payload:"
     Write-Verbose $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
@@ -61,7 +61,7 @@ catch {
 
 # Verify HMAC signature
 if ($computedSignature -ne $receivedSignature) {
-    Write-Error "[ERROR] Invalid HMAC signature for payload with size $($Request.rawbody.Length) bytes:"
+    Write-Error "Invalid HMAC signature for payload with size $($Request.rawbody.Length) bytes:"
     Write-Verbose $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
@@ -72,7 +72,7 @@ if ($computedSignature -ne $receivedSignature) {
 
 # Ensure that the webhook type is 'workflow_job'
 if ($null -eq $Request.Body.workflow_job) {
-    Write-Error "[ERROR] Unable to find 'workflow_job' element in payload"
+    Write-Error "Unable to find 'workflow_job' element in payload"
     Write-Verbose "Raw Payload:"
     Write-Verbose $Request.rawbody
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
@@ -113,7 +113,7 @@ if ($labels -notcontains "azure" || $labels -notcontains "production") {
 # Check if the request contains repository data
 $repo = $Request.Body.repository
 if (-not $repo) {
-    Write-Error "[ERROR] Repository data is missing from the webhook payload"
+    Write-Error "Repository data is missing from the webhook payload"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
         Body = "Repository data is missing from the webhook payload"
@@ -133,7 +133,7 @@ $createScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "../create.ps1"
 
 # Call create.ps1 with the required parameters
 try {
-    Write-Information "[INFO] Calling create.ps1..."
+    Write-Information "Calling create.ps1..."
 
     $containerGroup = & $createScriptPath `
         -ContainerGroupName $containerGroupName `
@@ -151,7 +151,7 @@ try {
 }
 
 catch {
-    Write-Error "[ERROR] Error creating container group: $_"
+    Write-Error "Error creating container group: $_"
     $responseBody = "Failed to create container group: $_"
     $statusCode = [HttpStatusCode]::InternalServerError
 }
@@ -162,4 +162,4 @@ Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     Body = $responseBody
 })
 
-Write-Information "[INFO] Startup successful"
+Write-Information "Startup successful"
