@@ -5,6 +5,8 @@ concurrency:
   cancel-in-progress: false
 
 on:
+  schedule:
+    - cron: 0 2 * * 1
   push:
     branches:
       - main
@@ -21,6 +23,7 @@ permissions:
 
 jobs:
   build:
+    name: build and push image
     uses: ./.github/workflows/cli.yml
     secrets: inherit
     with:
