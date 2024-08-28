@@ -50,7 +50,7 @@ jobs:
           modules-to-cache: |
             Az:12.2.0,
             Az.Accounts:3.0.3,
-            Az.ContainerInstance:1.0.3
+            Az.ContainerInstance:4.0.1
 
       - name: copy Azure modules into project
         shell: powershell
