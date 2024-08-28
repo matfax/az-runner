@@ -1,5 +1,9 @@
 name: deploy functions
 
+concurrency:
+  group: functions
+  cancel-in-progress: false
+
 on:
   push:
     branches:
@@ -36,9 +40,6 @@ jobs:
     environment: azure-functions
     permissions:
       id-token: write
-    concurrency:
-      group: functions
-      cancel-in-progress: false
     steps:
       - name: checkout code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -77,9 +78,6 @@ jobs:
     name: invoke webhook
     needs: deploy
     if: inputs.no-test != 'true'
-    concurrency:
-      group: functions
-      cancel-in-progress: false
     runs-on:
       - self-hosted
       - azure
@@ -88,14 +86,39 @@ jobs:
       - name: print output
         run: echo "Test successful"
 
+  test-gb:
+    name: invoke webhook with specs
+    needs: deploy
+    if: inputs.no-test != 'true'
+    runs-on:
+      - self-hosted
+      - azure
+      - production
+      - 2-cores
+      - 3-gb
+    steps:
+      - name: check cpu count
+        run: |
+          if [ "$(nproc)" -ne 2 ]; then
+            echo "Expected 2 CPUs, but found $(nproc)"
+            exit 1
+          final
+
   check:
     name: check final state
     runs-on: ubuntu-latest
-    needs: test
+    needs:
+      - test
+      - test-gb
     if: inputs.no-test != 'true'
     steps:
       - name: fail if test runner failed to complete
         if: needs.test.result != 'success'
+        run: |
+          echo "Test runner was probably cancelled or failed otherwise."
+          exit 1
+      - name: fail if test runner failed to complete
+        if: needs.test-gb.result != 'success'
         run: |
           echo "Test runner was probably cancelled or failed otherwise."
           exit 1
