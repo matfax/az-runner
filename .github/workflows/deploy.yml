@@ -102,7 +102,7 @@ jobs:
           if [ "$(nproc)" -ne 2 ]; then
             echo "Expected 2 CPUs, but found $(nproc)"
             exit 1
-          final
+          fi
 
   check:
     name: check final state
