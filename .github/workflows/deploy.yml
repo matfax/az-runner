@@ -23,11 +23,16 @@ on:
         required: false
         type: boolean
         default: true
+      no-deployment:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   deploy:
     name: deploy functions
     runs-on: windows-latest
+    if: inputs.no-deployment != 'true'
     environment: azure-functions
     permissions:
       id-token: write
