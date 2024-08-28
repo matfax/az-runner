@@ -26,10 +26,10 @@
     "customManagers": [
         {
             "customType": "regex",
-            "fileMatch": ["deploy\\.yml$"],
+            "fileMatch": ["^.*deploy\\.yml$"],
             "matchStringsStrategy": "any",
             "matchStrings": [
-                "(?<depName>\\w+?)[:]{0,2}(?<currentValue>[0-9\\.]*?)"
+                "(?<depName>[a-zA-Z.]+):(?<currentValue>[0-9.]*)"
             ],
             "datasourceTemplate": "nuget",
             "registryUrlTemplate": "https://www.powershellgallery.com/api/v2/"
