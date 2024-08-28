@@ -1,7 +1,7 @@
 # Input bindings are passed in via param block.
 param($Timer)
 
-Write-Information "Cleaning up superfluous runners..."
+Write-Host "Cleaning up superfluous runners..."
 
 $ResourceGroupName = $env:AZ_RES_GROUP
 
@@ -26,7 +26,7 @@ if (-not $insightsToken) {
     Write-Error "Access token for Log Analytics could not be obtained" -ErrorAction Stop
 }
 
-Write-Information "Access token for Log Analytics obtained"
+Write-Host "Obtained access token for Log Analytics"
 
 $subscriptionId = $env:AZ_SUBSCRIPTION_ID
 
@@ -55,8 +55,8 @@ $ignoreList = [ordered]@{}
 try {
     $response = Invoke-RestMethod -Uri $apiUrl -Method Post -Headers $headers -Body $requestBody -ErrorAction Stop
 
-    if (-not $response.tables || -not $response.tables[0    ]) {
-        Write-Output $response.tables | Format-List
+    if (-not $response.tables || -not $response.tables[0]) {
+        Write-Debug $response.tables | Format-List
         Write-Error "No data returned from API" -ErrorAction Stop
     }
 
@@ -65,7 +65,7 @@ try {
         $container_name = $row[0]
         $count = [long]$row[1]
         $ignoreList[$container_name] = $count
-        Write-Information "Container $container_name has $count recent startup requests"
+        Write-Verbose "Container $container_name has $count recent startup requests"
     }
 }
 catch {

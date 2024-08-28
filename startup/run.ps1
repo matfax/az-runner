@@ -3,7 +3,7 @@ using namespace System.Net
 param($Request, $TriggerMetadata)
 
 # Write to the Azure Functions log stream.
-Write-Information "Running startup script..."
+Write-Host "Running startup script..."
 
 # Ensure that the header contains 'workflow_job' event
 $eventType = $Request.Headers["X-GitHub-Event"]
@@ -43,15 +43,14 @@ try {
     $payloadBytes = [Text.Encoding]::UTF8.GetBytes($Request.rawbody)
     $computedHash = $hmacsha.ComputeHash($payloadBytes)
     $computedSignature = "sha256=" + [Convert]::ToHexString($computedHash).ToLower().Replace("-", "")
-    Write-Verbose "Computed hash: $computedSignature"
+    Write-Debug "Computed hash: $computedSignature"
 
     $receivedSignature = $Request.Headers['X-Hub-Signature-256']
-    Write-Verbose "Received hash: $receivedSignature"
+    Write-Debug "Received hash: $receivedSignature"
 }
 catch {
     Write-Error "Error calculating HMAC signature: $_"
-    Write-Verbose "Raw Payload:"
-    Write-Verbose $Request.rawbody
+    Write-Debug "Raw Payload: $($Request.rawbody)"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::InternalServerError
         Body = "Failed to calculate HMAC for payload"
@@ -61,8 +60,8 @@ catch {
 
 # Verify HMAC signature
 if ($computedSignature -ne $receivedSignature) {
-    Write-Error "Invalid HMAC signature for payload with size $($Request.rawbody.Length) bytes:"
-    Write-Verbose $Request.rawbody
+    Write-Error "Invalid HMAC signature for payload with size $($Request.rawbody.Length)"
+    Write-Debug "Raw Payload: $($Request.rawbody)"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::Unauthorized
         Body = "Invalid HMAC signature for payload"
@@ -73,8 +72,7 @@ if ($computedSignature -ne $receivedSignature) {
 # Ensure that the webhook type is 'workflow_job'
 if (-not $Request.Body.workflow_job) {
     Write-Error "Unable to find 'workflow_job' element in payload"
-    Write-Verbose "Raw Payload:"
-    Write-Verbose $Request.rawbody
+    Write-Debug "Raw Payload: $($Request.rawbody)"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
         Body = "Invalid webhook payload"
@@ -83,6 +81,8 @@ if (-not $Request.Body.workflow_job) {
 }
 
 $workflowJob = $Request.Body.workflow_job
+
+Write-Information "Workflow Trigger Action: $($Request.Body.action)"
 
 # Check if the workflow job is queued
 if ($Request.Body.action -ne "queued") {
@@ -99,10 +99,7 @@ $labels = $workflowJob.labels
 
 if ($labels -notcontains "azure" || $labels -notcontains "production") {
     Write-Information "[SKIPPING] Ignoring job without the 'azure' and 'production' runner labels"
-    Write-Verbose "Actual Labels:"
-    foreach ($label in $labels) {
-        Write-Verbose "- $label"
-    }
+    Write-Verbose "Actual Labels: $($labels | Format-List)"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::NoContent
         Body = "Ignoring job without the 'azure' and 'production' runner labels"
@@ -114,6 +111,7 @@ if ($labels -notcontains "azure" || $labels -notcontains "production") {
 $repo = $Request.Body.repository
 if (-not $repo) {
     Write-Error "Repository data is missing from the webhook payload"
+    Write-Debug "Payload: $($Request | Format-List)"
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
         StatusCode = [HttpStatusCode]::BadRequest
         Body = "Repository data is missing from the webhook payload"
@@ -133,7 +131,7 @@ $createScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "../create.ps1"
 
 # Call create.ps1 with the required parameters
 try {
-    Write-Information "Calling create.ps1..."
+    Write-Host "Calling create script..."
 
     $containerGroup = & $createScriptPath `
         -ContainerGroupName $containerGroupName `
@@ -157,6 +155,7 @@ catch {
 }
 
 # Return the response
+Write-Information $responseBody
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
     StatusCode = $statusCode
     Body = $responseBody

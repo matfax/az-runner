@@ -16,7 +16,6 @@ Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupName $ResourceGroup
 
 Write-Host "Container group '$ContainerGroupName' exists." -ForegroundColor Green
 
-
 # GitHub API URL
 $apiUrl = "https://api.github.com/repos/$GithubRepository/actions/runners"
 

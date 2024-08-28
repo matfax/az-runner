@@ -32,10 +32,10 @@ $containerGroup = Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupN
 
 Write-Information "Container group '$ContainerGroupName' exists: $($null -ne $containerGroup)"
 if ($containerGroup) {
-    Write-Output "Container group already exists."
+    Write-Host "Container group already exists."
     return $containerGroup
 } else {
-    Write-Output "Container group does not exist; creating..."
+    Write-Host "Container group does not exist; creating..."
 }
 
 # GitHub API URL
@@ -60,7 +60,7 @@ try {
         Write-Error "Failed to convert token to secure string." -ErrorAction Stop
     }
 
-    Write-Output "Registration token obtained and stored as a secure string."
+    Write-Host "Registration token obtained and stored as a secure string."
 }
 catch {
     Write-Error "Failed to obtain registration token" -ErrorAction Stop

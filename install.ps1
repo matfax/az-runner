@@ -7,7 +7,7 @@ param(
 $moduleDir = "./Modules"
 if (!(Test-Path $moduleDir)) {
     New-Item -ItemType Directory -Force -Path $moduleDir | Out-Null
-    Write-Output "Created directory: $moduleDir"
+    Write-Host "Created directory: $moduleDir"
 }
 
 # Split PSModulePath into an array of paths
@@ -17,7 +17,6 @@ $modulePaths = $env:PSModulePath -split ';'
 $modulePaths += "C:\Program Files\PowerShell\Modules"
 
 # Find the first path where the Module exists
-$foundModulePath = $null
 foreach ($path in $modulePaths) {
     $fullPath = Join-Path -Path $path -ChildPath $ModuleName
     if (Test-Path $fullPath) {
@@ -27,11 +26,11 @@ foreach ($path in $modulePaths) {
 }
 
 # Throw an exception if the Module was not found
-if ($null -eq $foundModulePath) {
+if (-not $foundModulePath) {
     throw "Module '$ModuleName' not found in any of the paths in PSModulePath"
 }
 
 # Copy the Module to the current directory's ./Module/ path
 $destPath = Join-Path -Path $moduleDir -ChildPath $ModuleName
 Copy-Item -Path $foundModulePath -Destination $destPath -Recurse -Force
-Write-Output "Copied Module '$ModuleName' to: $destPath"
+Write-Host "Copied Module '$ModuleName' to: $destPath"
