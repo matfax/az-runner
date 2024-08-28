@@ -41,7 +41,7 @@ jobs:
       environment: azure-test
       script: ./create.ps1 `
         -ContainerGroupName az-runner-test `
-        -Labels "linux,x64,azure,test"
+        -Labels @("linux","x64","azure","test")
 
   check:
     name: check availability

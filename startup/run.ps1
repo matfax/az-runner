@@ -129,6 +129,9 @@ $containerGroupName = "az-runner-$orgOrUser-$repoName"
 # Construct the path to create.ps1
 $createScriptPath = Join-Path -Path $PSScriptRoot -ChildPath "../create.ps1"
 
+$labels += "linux"
+$labels += "x64"
+
 # Call create.ps1 with the required parameters
 try {
     Write-Host "Calling create script..."
@@ -136,8 +139,9 @@ try {
     $containerGroup = & $createScriptPath `
         -ContainerGroupName $containerGroupName `
         -GithubRepository "$orgOrUser/$repoName" `
-        -Labels "linux,x64,azure,production" `
-        -NoWait
+        -Labels $labels `
+        -NoWait `
+        -AppendSpecs
 
     if ($true -eq $containerGroup) {
         $responseBody = "Successfully created container group"

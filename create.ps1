@@ -16,16 +16,34 @@ param (
     [Parameter(Mandatory=$false)]
     [string]$GithubToken = $env:GITHUB_PAT,
     [Parameter(Mandatory=$true)]
-    [string]$Labels,
+    [string[]]$Labels,
     [Parameter(Mandatory=$false)]
     [int]$RequestCpu=1,
     [Parameter(Mandatory=$false)]
     [int]$RequestMemory=2,
     [Parameter(Mandatory=$false)]
     [switch]$NoWait,
+    [Parameter(Mandatory=$false)]
+    [switch]$AppendSpecs,
     [Parameter(ValueFromRemainingArguments=$true)]
     [string[]]$ExtraArgs
 )
+
+# Set cores and memory if labels contain metadata
+$Labels | ForEach-Object {
+    if ($_ -match '^(\d+)-(cores|gb)$') {
+        $value = [int]$Matches[1]
+        switch ($Matches[2]) {
+            'cores' { $RequestCpu = [Math]::Min($value, 8) }
+            'gb'    { $RequestMemory = [Math]::Min($value, 32) }
+        }
+    }
+}
+
+# Append hardware specs to container name
+if ($AppendSpecs) {
+    $ContainerGroupName += "-$($RequestCpu)core$($RequestMemory)gb"
+}
 
 # Check if container group already exists
 $containerGroup = Get-AzContainerGroup -Name $ContainerGroupName -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
@@ -70,7 +88,7 @@ catch {
 $repoEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "REPO_URL" -Value "https://github.com/$GithubRepository"
 $runnerNameEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER_NAME" -Value $ContainerGroupName
 $runnerScopeEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "RUNNER_SCOPE" -Value "repo"
-$labelsEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "LABELS" -Value $Labels
+$labelsEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "LABELS" -Value ($Labels -join ',')
 $ephemeralEnv = New-AzContainerInstanceEnvironmentVariableObject -Name "EPHEMERAL" -Value "1"
 
 # Define secure environment variable
