@@ -16,6 +16,7 @@ on:
         - 'startup/*'
         - 'cleanup/*'
         - 'test/*'
+        - '.github/workflows/deploy.yml'
 
 permissions:
   id-token: write
