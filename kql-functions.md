@@ -4,8 +4,8 @@
 
 ```kql
 requests
-| where resultCode in (```208```, ```201```)
-| where operation_Name in (```startup```)
+| where resultCode in (`208`, `201`)
+| where operation_Name in (`startup`)
 ```
 
 ## container_group_extended
