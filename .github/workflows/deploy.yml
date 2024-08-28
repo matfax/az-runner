@@ -48,7 +48,7 @@ jobs:
         uses: potatoqualitee/psmodulecache@8a705c639dc276dfe651189abf11544c5080d384 # v6.2
         with:
           modules-to-cache: |
-            Az:12.1.0,
+            Az:12.2.0,
             Az.Accounts:2.2.3,
             Az.ContainerInstance:1.0.3
 
