@@ -60,7 +60,7 @@ jobs:
           ./install.ps1 -ModuleName Az.ContainerInstance
       
       - name: Login to Azure
-        uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_426EBB997E104B7BBA2371F9A44EA1FD }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_CA698282E4EE4B108BA0A7094D216875 }}

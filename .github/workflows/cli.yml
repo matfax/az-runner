@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: login to Azure
-        uses: azure/login@6c251865b4e6290e7b78be643ea2d005bc51f69a # v2.1.1
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         with:
           client-id: ${{ secrets.client-id || secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.tenant-id || secrets.AZURE_TENANT_ID }}
